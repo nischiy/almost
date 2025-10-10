@@ -1,0 +1,14 @@
+{
+  "loader_entry": "load_env_files()",
+  "keys": {
+    "BINANCE_API_KEY": "uHU341LHZxg23A3v5swt7Mszg2Vr1hwbaZNjsusdAxsLFI9s4kYDf7WXT1fXnf0g",
+    "BINANCE_API_SECRET": "jcg1EzToWHW3KTfUeRw2ueKBJxEZgyKDpDVxwltr869M3pt5MeJaLsOt1UzQ22R1",
+    "PAPER_TRADING": "0",
+    "TRADE_ENABLED": "1",
+    "RISK_MAX_DD_PCT_DAY": "3.0",
+    "RISK_MAX_LOSS_USD_DAY": "10",
+    "RISK_MAX_TRADES_PER_DAY": "20",
+    "RISK_MAX_CONSEC_LOSSES": "3",
+    "RISK_MIN_EQUITY_USD": "50"
+  }
+}

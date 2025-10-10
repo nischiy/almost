@@ -1,0 +1,8 @@
+{
+  "timestamp": "2025-09-25T06:13:31Z",
+  "latency_ms": 720.91,
+  "decisions_stale_sec": null,
+  "stale_warn": true,
+  "drift_sec": 31.33,
+  "drift_warn": false
+}

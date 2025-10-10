@@ -1,0 +1,23 @@
+PATCH CONTENTS
+--------------
+- scripts/maintain_structure.py : moves analysis_indicators.py to scripts/, archives _previews/, rewires imports to unified config.
+- core/risk.py : RiskManagerCompat with refresh_from_logs(), daily limits, helpers.
+- core/live_guard.py : simple hook to check daily limits before opening a trade.
+
+HOW TO APPLY
+------------
+1) Unzip patch into your project root so that files land under scripts/ and core/.
+2) Run:  python scripts/maintain_structure.py
+3) Ensure your .env has RISK_MAX_TRADES_DAY (or old RISK_MAX_TRADES_PER_DAY will still be read).
+
+OPTIONAL MAIN INTEGRATION
+-------------------------
+    from core.risk import get_risk_manager
+    rm = get_risk_manager()
+    rm.refresh_from_logs(lambda: current_equity_usd())  # call once per run or periodically
+
+    from core.live_guard import guard_before_entry
+    ok, reason = guard_before_entry(lambda: current_equity_usd())
+    if not ok:
+        logger.warning("Blocked new entry: %s", reason)
+        return

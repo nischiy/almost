@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Git hook (pre-commit) — перевірка відсутності UTF-8 BOM у *.py
+# Встановлення: git config core.hooksPath .githooks
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+PY="${ROOT}/.venv/Scripts/python.exe"
+if [ ! -x "$PY" ]; then
+  PY="python"
+fi
+# Перевіряємо тільки індексовані/змінені *.py
+changed=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.py(i)?$' || true)
+if [ -z "$changed" ]; then
+  exit 0
+fi
+# Запускаємо скан по кореню (швидко) у режимі --check
+"$PY" "scripts/maintenance/strip_bom.py" --root "$ROOT" --check

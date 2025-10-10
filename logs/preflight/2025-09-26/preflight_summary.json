@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-09-26T01:31:46.692099+00:00",
+  "env_loader_entry": "load_env_files()",
+  "required_keys_missing": [],
+  "modes": {
+    "paper_trading": false,
+    "trade_enabled": true,
+    "warnings": []
+  },
+  "risk_issues": {},
+  "warnings": [],
+  "errors": [],
+  "dod_pass": true
+}

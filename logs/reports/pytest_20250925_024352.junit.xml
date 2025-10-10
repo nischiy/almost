@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="0.226" timestamp="2025-09-25T02:43:52.527168+03:00" hostname="DESKTOP-J6ITF3M"><testcase classname="tests.app.test_entrypoint" name="test_entrypoint_main_runs_once" time="0.001" /><testcase classname="tests.app.test_execution" name="test_execution_has_callable_place_like" time="0.000" /><testcase classname="tests.app.test_market_data" name="test_http_market_data_public_rest" time="0.008" /><testcase classname="tests.app.test_risk" name="test_risk_can_open_basic" time="0.001" /><testcase classname="tests.app.test_run_cycle" name="test_traderapp_run_once_exec_called" time="0.001"><failure message="AssertionError: assert 'decision' in {}">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x000001EFB53B32F0&gt;
+df_klines =                           timestamp     open    high     low   close  volume
+0  2025-09-24 22:43:52.660884+00:00   99....0   95.145   95.88   94.41   95.80  18.319
+59 2025-09-24 23:42:52.660884+00:00   94.865   95.92   93.81   95.38   8.247
+
+    def test_traderapp_run_once_exec_called(monkeypatch, df_klines):
+        from app.run import TraderApp
+    
+        app = TraderApp(cfg=None)
+    
+        # stub md
+        class MD:
+            def get_klines(self, symbol, interval, limit=1000):
+                return df_klines
+        app.md = MD()
+    
+        # stub signal
+        class SIG:
+            def decide(self, df, params):
+                return {"action":"LONG","price":float(df['close'].iloc[-1]),"qty":0.001}
+        app.sig = SIG()
+    
+        # stub risk
+        class RISK:
+            def can_open(self, decision):
+                return True, ""
+        app.risk = RISK()
+    
+        # capture execution
+        calls = {}
+        class EXE:
+            def place(self, decision):
+                calls["decision"] = decision
+        app.exe = EXE()
+    
+        # stub telemetry (no-ops)
+        class TEL:
+            def snapshot(self, df): pass
+            def decision(self, d): pass
+            def health(self, ok=True, msg="", **kw): pass
+        app.tel = TEL()
+    
+        app.run_once()
+&gt;       assert "decision" in calls
+E       AssertionError: assert 'decision' in {}
+
+tests\app\test_run_cycle.py:41: AssertionError</failure></testcase></testsuite></testsuites>

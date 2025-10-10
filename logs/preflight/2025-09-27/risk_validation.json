@@ -1,0 +1,17 @@
+{
+  "values": {
+    "RISK_MAX_DD_PCT_DAY": 3.0,
+    "RISK_MAX_LOSS_USD_DAY": 10.0,
+    "RISK_MAX_TRADES_PER_DAY": 20.0,
+    "RISK_MAX_CONSEC_LOSSES": 3.0,
+    "RISK_MIN_EQUITY_USD": 50.0
+  },
+  "issues": {},
+  "raw": {
+    "RISK_MAX_DD_PCT_DAY": "3.0",
+    "RISK_MAX_LOSS_USD_DAY": "10",
+    "RISK_MAX_TRADES_PER_DAY": "20",
+    "RISK_MAX_CONSEC_LOSSES": "3",
+    "RISK_MIN_EQUITY_USD": "50"
+  }
+}

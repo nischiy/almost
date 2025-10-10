@@ -1,0 +1,2 @@
+# NOTE: For STOP_MARKET/TAKE_PROFIT_MARKET on futures, timeInForce is not required.
+# Ensure your utils/exit_adapter.py builds orders without timeInForce for these types.

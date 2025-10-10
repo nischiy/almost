@@ -1,0 +1,12 @@
+UPDATE: MAX_BARS alias
+----------------------
+Some parts of your code call `cfg.max_bars`. This patch adds support for MAX_BARS:
+- Reads env var MAX_BARS (default 1000)
+- Adds lowercase alias `cfg.max_bars`
+
+How to apply:
+1) Place `core/config/unified_max_bars_patch.py` alongside `core/config/unified.py`
+2) Open `core/config/__init__.py` and append the following line at the end:
+       from .unified_max_bars_patch import CFG  # ensures MAX_BARS alias is attached
+3) (Optional) In your .env set:  MAX_BARS=1000
+4) Run: python .\main.py

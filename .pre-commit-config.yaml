@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: strip-bom-check
+        name: Strip UTF-8 BOM (check)
+        entry: python scripts/maintenance/strip_bom.py --check
+        language: system
+        pass_filenames: false

@@ -1,0 +1,466 @@
+{
+  "time": {
+    "serverTime": 1758994894237,
+    "clientTime": 1758994894175
+  },
+  "exchangeInfo": {
+    "timezone": "UTC",
+    "serverTime": 1758988815888,
+    "symbols_preview": [
+      {
+        "symbol": "BTCUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ETHUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "BCHUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "XRPUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "LTCUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "TRXUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ETCUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "LINKUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "XLMUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ADAUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "XMRUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "DASHUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ZECUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "XTZUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "BNBUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ATOMUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ONTUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "IOTAUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "BATUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "VETUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "NEOUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "QTUMUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "IOSTUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "THETAUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ALGOUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ZILUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "KNCUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "ZRXUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "COMPUSDT",
+        "status": "TRADING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      },
+      {
+        "symbol": "OMGUSDT",
+        "status": "SETTLING",
+        "contractType": "PERPETUAL",
+        "filters": [
+          "PRICE_FILTER",
+          "LOT_SIZE",
+          "MARKET_LOT_SIZE",
+          "MAX_NUM_ORDERS",
+          "MAX_NUM_ALGO_ORDERS",
+          "MIN_NOTIONAL",
+          "PERCENT_PRICE",
+          "POSITION_RISK_CONTROL"
+        ]
+      }
+    ]
+  },
+  "account_ping": {
+    "ok": true,
+    "http": 200
+  }
+}

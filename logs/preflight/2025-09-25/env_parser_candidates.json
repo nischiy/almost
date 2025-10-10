@@ -1,0 +1,786 @@
+﻿[
+    {
+        "Path":  "G:\\Bot\\almost\\scripts\\find_env_parser.ps1",
+        "Score":  5
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\v1\\env_settings.py",
+        "Score":  4
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\python_dotenv-1.1.1.dist-info\\METADATA",
+        "Score":  4
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\scripts\\preflight_live.py",
+        "Score":  3
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\dotenv\\main.py",
+        "Score":  3
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\env_loader.py",
+        "Score":  3
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\callwrapper.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\dotenv\\__pycache__\\__init__.cpython-313.pyc",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_vendor\\rich\\diagnose.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\risk\\limits.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\risk_guard.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\configuration.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\v1\\__pycache__\\env_settings.cpython-313.pyc",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\pythonapi.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\requests\\utils.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\config\\loader.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\tools\\preflight\\preflight_all.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\dotenv\\cli.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.env",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\main.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\aiohttp\\helpers.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\tools\\guard\\kill_switch.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\tests\\test_env_minimal.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_vendor\\requests\\utils.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\dotenv\\__pycache__\\main.cpython-313.pyc",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\dotenv\\__init__.py",
+        "Score":  2
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\_internal\\_core_utils.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\__pycache__\\mypy.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\v1\\__pycache__\\__init__.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\v1\\__pycache__\\mypy.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_vendor\\packaging\\tags.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pygments\\lexers\\scripting.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\tests\\test_memory.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\__pycache__\\_migration.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pygments\\lexers\\__pycache__\\scripting.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pygments\\lexers\\__pycache__\\arturo.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\requests\\sessions.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\python_dotenv-1.1.1.dist-info\\entry_points.txt",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pygments\\formatters\\img.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic-2.11.9.dist-info\\METADATA",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pygments\\lexers\\shell.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pygments\\lexers\\arturo.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_vendor\\pkg_resources\\__init__.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\tests\\test_gdb.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\tests\\test_extension_type.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_vendor\\pyproject_hooks\\_impl.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\tests\\test_jvm.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\tests\\test_cython.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_vendor\\requests\\sessions.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_vendor\\rich\\console.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\tests\\conftest.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\include\\arrow\\testing\\matchers.h",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\v1\\mypy.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\plugin\\_loader.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_vendor\\platformdirs\\__init__.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\v1\\__init__.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\_migration.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\tests\\util.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pyarrow\\tests\\test_misc.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\mypy.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pydantic\\json_schema.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\logs\\preflight\\2025-09-25\\preflight_20250925T040817Z.json",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\logs\\preflight\\2025-09-25\\preflight_20250925T040639Z.json",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\logs\\preflight\\2025-09-25\\preflight_20250925T041127Z.json",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\risk\\__pycache__\\limits.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\risk\\__pycache__\\limits.cpython-311.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\__pycache__\\env_loader.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\__pycache__\\env_loader.cpython-311.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\__pycache__\\risk_guard.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\docs\\readmes\\PATCH_NOTES.txt",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\docs\\ops\\PATCH_NOTES.txt",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\scripts\\check_binance_client.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\tools\\health\\health_loop.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\tools\\common\\env_utils.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\tools\\preflight\\check_env_and_binance.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\tools\\trades\\pull_income_as_trades.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\tools\\trades\\pull_from_binance.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\scripts\\ensure_env_risk_defaults.ps1",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\scripts\\clear_conflicting_env.ps1",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\scripts\\fix_binance_pkg.ps1",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\scripts\\live\\check_account.ps1",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\scripts\\diagnostics\\leverage_sizer_cli.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\_pytest\\_io\\terminalwriter.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\_pytest\\tmpdir.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\_pytest\\_py\\path.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Scripts\\activate.bat",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Scripts\\activate",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\tzlocal\\utils.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\tzlocal\\unix.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\tzlocal\\win32.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\_pytest\\pytester.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\_pytest\\main.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Scripts\\activate.nu",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\exchange_private.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\app\\services\\signal.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\execution\\binance_exec.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\filters\\gates.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\core\\execution\\binance_futures.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Scripts\\deactivate.bat",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Scripts\\activate.ps1",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Scripts\\python313.dll",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\app\\services\\execution.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\app\\entrypoint.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\utils\\temp_dir.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\pycc\\compiler.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\np\\ufunc\\wrappers.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\support.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_chrome_trace.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_caching.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\np\\ufunc\\ufuncbuilder.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\misc\\appdirs.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\cuda\\tests\\cudadrv\\test_linker.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\np\\ufunc\\array_exprs.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\np\\ufunc\\parallel.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\np\\ufunc\\dufunc.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_cli.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_parallel_backend.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_nrt.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_parfors.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_pycc.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_parfors_caching.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_hashing.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_debuginfo.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_config.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_entrypoints.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_gdb_dwarf.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_gdb_bindings.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\dotenv\\__pycache__\\cli.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\dotenv\\ipython.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\dotenv\\__pycache__\\ipython.cpython-313.pyc",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\llvmlite-0.45.0.dist-info\\METADATA",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\llvmlite\\tests\\test_binding.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\Crypto\\Util\\_raw_api.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\requirements.txt",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\README_GUARD.md",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\pyvenv.cfg",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\Crypto\\Math\\Numbers.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\aiohttp\\client.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\_dynfunc.c",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\object_mode_passes.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\lowering.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\typed_passes.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\cuda\\tests\\cudadrv\\test_detect.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\cuda\\cuda_paths.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\ir_utils.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\compiler.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\base.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\cpu.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\imputils.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\core\\environment.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\hash.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\freeze.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\help.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\inspect.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\index.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\debug.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\cache.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\cli\\index_command.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\check.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\configuration.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\completion.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\install.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\req\\req_file.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\operations\\check.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\req\\req_install.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\utils\\subprocess.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\resolution\\resolvelib\\factory.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\network\\auth.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\search.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\list.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\commands\\show.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\metadata\\__init__.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\distributions\\sdist.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\_version.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\packaging\\tags.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\core\\computation\\engines.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\core\\computation\\expr.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\core\\computation\\eval.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numpy\\_core\\tests\\test_mem_policy.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_typeinfer.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_target_extension.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_vectorization.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numpy\\_core\\tests\\test_cpu_features.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\numba\\tests\\test_warnings.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\core\\computation\\ops.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas-stubs\\core\\computation\\ops.pyi",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas-stubs\\core\\computation\\expr.pyi",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas-stubs\\core\\computation\\pytables.pyi",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\cli\\autocompletion.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pip\\_internal\\build_env.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\tests\\io\\formats\\style\\test_html.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\io\\clipboard\\__init__.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\core\\computation\\pytables.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\io\\formats\\style.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\tests\\internals\\test_managers.py",
+        "Score":  1
+    },
+    {
+        "Path":  "G:\\Bot\\almost\\.venv\\Lib\\site-packages\\pandas\\io\\formats\\style_render.py",
+        "Score":  1
+    }
+]

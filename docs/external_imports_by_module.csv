@@ -1,0 +1,151 @@
+module,external_packages
+app.__init__,
+app.entrypoint,__future__ argparse logging os sys typing
+app.ports,__future__ pandas typing
+app.run,__future__ importlib logging os sys time typing
+app.services.__init__,
+app.services.execution,__future__ datetime logging os pathlib typing
+app.services.exit_adapter,__future__ hashlib hmac json os ssl time urllib
+app.services.market_data,__future__ inspect json logging pandas requests typing urllib
+app.services.notifications,__future__ importlib json os pathlib ssl time typing urllib
+app.services.order_adapter,__future__ dataclasses importlib os pathlib time typing
+app.services.order_service,__future__ importlib os pathlib typing
+app.services.risk,__future__ typing
+app.services.signal,__future__ os pandas typing
+app.services.telemetry,__future__ logging pandas typing
+core.__init__,
+core.config.__init__,
+core.config.best_params,__future__
+core.config.loader,__future__ dataclasses os typing
+core.env_loader,__future__ dotenv os pathlib
+core.exchange.__init__,
+core.exchange.symbol_info,__future__ dataclasses decimal typing
+core.exchange_private,__future__ binance os typing
+core.execution.binance_exec,__future__ binance csv datetime functools json math os time typing
+core.execution.binance_futures,__future__ hashlib hmac os requests time typing
+core.execution.signer,__future__ hashlib hmac time urllib
+core.filters.gates,__future__ dataclasses datetime os pandas pathlib typing
+core.filters_pkg.__init__,
+core.filters_pkg.sets,__future__ datetime typing
+core.indicators,__future__ dataclasses numpy pandas typing
+core.indicators.__init__,__future__ numpy pandas typing
+core.live_guard,
+core.logic.__init__,
+core.logic.ema_rsi_atr,__future__ pandas typing
+core.paper,__future__ dataclasses datetime pandas pathlib typing
+core.params_loader,
+core.positions.portfolio,__future__ dataclasses datetime inspect json pathlib typing
+core.positions.position_sizer,__future__ dataclasses json math os ssl typing urllib
+core.precision,__future__ datetime json math os pathlib requests typing
+core.risk.__init__,typing
+core.risk.misc_risk_root,__future__ typing
+core.risk_guard,__future__ dataclasses datetime json os pathlib typing
+core.telemetry.__init__,__future__ datetime json os pandas typing
+core.telemetry.health,__future__ datetime json logging pathlib typing
+core.telemetry.update_log,__future__ datetime json os pathlib typing
+core.utils.filters_patch,
+main,__future__ inspect logging os types typing
+scripts.check_binance_client,binance os sys traceback
+scripts.diagnose_entry,__future__ inspect
+scripts.diagnose_sitecustomize,importlib os sys
+scripts.diagnostics.analyze_utils,argparse ast collections datetime hashlib json os re sys textwrap
+scripts.diagnostics.cancel_all_cli,__future__ hashlib hmac json os ssl sys time urllib
+scripts.diagnostics.inspect_strategy_module,importlib inspect os sys
+scripts.diagnostics.leverage_sizer_cli,__future__ json os pathlib sys
+scripts.diagnostics.leverage_sizer_standalone,__future__ json math os ssl urllib
+scripts.diagnostics.list_open_orders,__future__ hashlib hmac json os ssl sys time urllib
+scripts.diagnostics.list_positions,__future__ hashlib hmac json os ssl sys time urllib
+scripts.diagnostics.log_preflight,__future__ importlib json os pathlib sys time
+scripts.diagnostics.log_sizer,
+scripts.diagnostics.order_dry_run,
+scripts.diagnostics.order_preview_cli,
+scripts.diagnostics.order_send_cli,
+scripts.diagnostics.order_send_live_auto_cli,__future__ importlib json os pathlib sys time
+scripts.diagnostics.order_send_live_cli,
+scripts.diagnostics.preflight_v2,__future__ datetime json math os ssl sys time urllib
+scripts.diagnostics.qty_guard_example,__future__ json os pathlib sys
+scripts.diagnostics.risk_guard_check,
+scripts.diagnostics.set_tp_sl_cli,
+scripts.diagnostics.size_advisor,__future__ json math os ssl urllib
+scripts.diagnostics.trade_once,
+scripts.diagnostics.verify_strategy_imports,
+scripts.maintenance.strip_bom,__future__ argparse pathlib sys
+scripts.maintenance.upgrade_websockets_imports,__future__ argparse pathlib re sys
+scripts.patch_strategy_export,__future__ io os re shutil sys
+scripts.preflight_all,datetime hashlib hmac importlib inspect json os pathlib re sys time urllib
+scripts.preflight_live,binance json os pathlib re sys traceback
+scripts.print_env_locations,pathlib
+scripts.print_last_health_links,glob os pathlib
+scripts.print_last_trading_links,pathlib
+scripts.prod_step1_precision,__future__ datetime json os pathlib
+scripts.refactor.remove_bridge,argparse io json os pathlib re shutil sys
+scripts.remove_strategy,__future__ argparse ast pathlib sys
+scripts.repair_execution_indent,__future__ datetime pathlib re
+scripts.run.loop_live_safe,
+scripts.run.loop_preview,
+scripts.strip_disabled_paper_lines,pathlib
+scripts.tune,__future__ argparse json sys
+scripts.update_log,__future__ argparse
+sitecustomize,importlib sys websockets
+tests.app.test_atr_risk_budget,__future__ importlib json os
+tests.app.test_entrypoint,sys
+tests.app.test_entrypoint_api,importlib os types
+tests.app.test_execution,inspect
+tests.app.test_market_data,json pandas types
+tests.app.test_risk,
+tests.app.test_run_cycle,pandas
+tests.app.test_run_traderapp_smoke,importlib numpy pandas
+tests.app.test_services_aux_imports,importlib
+tests.app.test_services_execution,glob importlib os pathlib shutil
+tests.app.test_services_market_data,importlib json
+tests.app.test_services_risk,importlib
+tests.app.test_services_signal,importlib pandas
+tests.app.test_services_telemetry,importlib pandas
+tests.app.test_signal,pandas
+tests.app.test_telemetry,pathlib
+tests.conftest,__future__ numpy os pandas pathlib pytest sys typing
+tests.core.test_best_params,
+tests.core.test_config_loader,
+tests.core.test_execution_modules,
+tests.core.test_filters_gates,
+tests.core.test_filters_presets,
+tests.core.test_indicators,importlib pandas
+tests.core.test_logic_modules,
+tests.core.test_positions_portfolio,
+tests.core.test_risk_root,
+tests.core.test_symbol_info,inspect
+tests.core.test_telemetry_health,
+tests.integration.test_contract_and_smoke,importlib types
+tests.integration.test_logging_and_health,importlib os pathlib
+tests.integration.test_risk_limits_e2e,
+tests.preflight.test_preflight_env_validation,builtins importlib json os pathlib pytest types
+tests.preflight.test_preflight_modules_check,builtins importlib pytest types
+tests.preflight.test_preflight_run_artifact,json os pathlib time
+tests.runtime.test_entrypoint_presence,importlib pytest types
+tests.runtime.test_run_exec,os pytest subprocess sys
+tests.smoke.test_imports,
+tests.smoke.test_indicators_smoke,numpy pandas
+tests.smoke.test_strategy_smoke,
+tests.test_app_import,
+tests.test_app_run_once,pandas
+tests.test_env_minimal,os pathlib
+tests.test_executor_service,pathlib
+tests.test_indicators_basic,numpy pandas
+tests.test_market_data_service,json types
+tests.test_risk_gate,numpy pandas
+tests.test_signal_service,numpy pandas
+tests.test_strategy_signal,
+tests.test_telemetry_service,pandas
+tools.__init__,
+tools.common.__init__,
+tools.common.env_utils,datetime json orjson os re typing
+tools.guard.kill_switch,csv datetime json os pathlib sys time
+tools.health.health_loop,binance datetime json os pathlib sys time
+tools.metrics.__init__,
+tools.metrics.compute_baseline,argparse collections csv dataclasses datetime json math pathlib sys typing
+tools.preflight.__init__,
+tools.preflight.binance_checks,__future__ time
+tools.preflight.preflight_all,__future__ datetime json os pathlib sys typing
+tools.trades.export_trades,argparse csv datetime json math pathlib sys typing
+tools.trades.pull_from_binance,argparse binance csv datetime math os pathlib sys typing
+tools.trades.pull_income_as_trades,argparse binance csv datetime os pathlib sys

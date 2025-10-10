@@ -1,0 +1,168 @@
+{
+  "generated_at": "2025-09-25T04:06:39Z",
+  "python": "3.13.5 (tags/v3.13.5:6cb20a2, Jun 11 2025, 16:15:46) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "modules": {
+    "ok": false,
+    "modules": [
+      {
+        "name": "python-binance",
+        "import": "binance",
+        "critical": true,
+        "ok": true,
+        "version": "1.0.29",
+        "error": null
+      },
+      {
+        "name": "pandas",
+        "import": "pandas",
+        "critical": true,
+        "ok": true,
+        "version": "2.3.2",
+        "error": null
+      },
+      {
+        "name": "numba",
+        "import": "numba",
+        "critical": false,
+        "ok": false,
+        "version": null,
+        "error": "ModuleNotFoundError: No module named 'numba'"
+      },
+      {
+        "name": "ta",
+        "import": "ta",
+        "critical": false,
+        "ok": false,
+        "version": null,
+        "error": "ModuleNotFoundError: No module named 'ta'"
+      },
+      {
+        "name": "pydantic",
+        "import": "pydantic",
+        "critical": true,
+        "ok": false,
+        "version": null,
+        "error": "ModuleNotFoundError: No module named 'pydantic'"
+      },
+      {
+        "name": "orjson",
+        "import": "orjson",
+        "critical": false,
+        "ok": false,
+        "version": null,
+        "error": "ModuleNotFoundError: No module named 'orjson'"
+      }
+    ],
+    "uvloop": {
+      "ok": true,
+      "skipped": true
+    }
+  },
+  "env_validation": {
+    "ok": false,
+    "missing": [],
+    "flags": {
+      "PAPER_TRADING": false,
+      "TRADE_ENABLED": true,
+      "BINANCE_TESTNET": false
+    },
+    "creds_ok": true,
+    "creds_missing": [],
+    "risk_checks": [
+      {
+        "key": "RISK_MAX_DD_PCT_DAY",
+        "ok": false,
+        "error": "not a number"
+      },
+      {
+        "key": "RISK_MAX_TRADES_PER_DAY",
+        "ok": false,
+        "error": "not a number"
+      },
+      {
+        "key": "RISK_MAX_CONSEC_LOSSES",
+        "ok": false,
+        "error": "not a number"
+      },
+      {
+        "key": "RISK_MIN_EQUITY_USD",
+        "ok": false,
+        "error": "not a number"
+      }
+    ]
+  },
+  "connectivity": {
+    "ok": true,
+    "stack": [],
+    "ping_ms": 479,
+    "server_time": {
+      "serverTime": 1758773201818
+    },
+    "clock_drift_ms": 854,
+    "rateLimits": [
+      {
+        "rateLimitType": "REQUEST_WEIGHT",
+        "interval": "MINUTE",
+        "intervalNum": 1,
+        "limit": 2400
+      },
+      {
+        "rateLimitType": "ORDERS",
+        "interval": "MINUTE",
+        "intervalNum": 1,
+        "limit": 1200
+      },
+      {
+        "rateLimitType": "ORDERS",
+        "interval": "SECOND",
+        "intervalNum": 10,
+        "limit": 300
+      }
+    ],
+    "symbol_filters": [
+      {
+        "filterType": "PRICE_FILTER",
+        "tickSize": "0.10",
+        "minPrice": "556.80",
+        "maxPrice": "4529764"
+      },
+      {
+        "stepSize": "0.001",
+        "maxQty": "1000",
+        "minQty": "0.001",
+        "filterType": "LOT_SIZE"
+      },
+      {
+        "filterType": "MARKET_LOT_SIZE",
+        "maxQty": "120",
+        "stepSize": "0.001",
+        "minQty": "0.001"
+      },
+      {
+        "filterType": "MAX_NUM_ORDERS",
+        "limit": 200
+      },
+      {
+        "limit": 10,
+        "filterType": "MAX_NUM_ALGO_ORDERS"
+      },
+      {
+        "filterType": "MIN_NOTIONAL",
+        "notional": "100"
+      },
+      {
+        "multiplierUp": "1.0500",
+        "multiplierDecimal": "4",
+        "filterType": "PERCENT_PRICE",
+        "multiplierDown": "0.9500"
+      },
+      {
+        "filterType": "POSITION_RISK_CONTROL",
+        "positionControlSide": "NONE"
+      }
+    ],
+    "legacy_client": true
+  },
+  "ok": false
+}

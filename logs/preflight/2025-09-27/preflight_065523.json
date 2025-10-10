@@ -1,0 +1,65 @@
+{
+  "ok": true,
+  "env": {
+    "ok": true,
+    "flags": {
+      "PAPER_TRADING": false,
+      "TRADE_ENABLED": true,
+      "BINANCE_TESTNET": false
+    },
+    "creds_ok": true,
+    "risk": {}
+  },
+  "modules": {
+    "ok": true,
+    "modules": [
+      {
+        "package": "python-binance",
+        "import": "binance",
+        "ok": true,
+        "critical": true
+      },
+      {
+        "package": "pandas",
+        "import": "pandas",
+        "ok": true,
+        "critical": true
+      },
+      {
+        "package": "numba",
+        "import": "numba",
+        "ok": true,
+        "critical": false
+      },
+      {
+        "package": "ta",
+        "import": "ta",
+        "ok": true,
+        "critical": false
+      },
+      {
+        "package": "pydantic",
+        "import": "pydantic",
+        "ok": true,
+        "critical": true
+      },
+      {
+        "package": "orjson",
+        "import": "orjson",
+        "ok": true,
+        "critical": false
+      }
+    ],
+    "uvloop": {
+      "ok": true,
+      "note": "skipped on Windows"
+    }
+  },
+  "connectivity": {
+    "ok": true,
+    "ping_ms": 25,
+    "clock_drift_ms": 3,
+    "symbol": "BTCUSDT"
+  },
+  "env_load_err": null
+}

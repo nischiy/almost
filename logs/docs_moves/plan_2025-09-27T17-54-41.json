@@ -1,0 +1,80 @@
+﻿[
+    {
+        "From":  "G:/Bot/almost/README/README_CORE_TESTS.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_CORE_TESTS.md",
+        "Rel":  "README/README_CORE_TESTS.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_FIND_WIRE.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_FIND_WIRE.md",
+        "Rel":  "README/README_FIND_WIRE.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_GUARD.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_GUARD.md",
+        "Rel":  "README/README_GUARD.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_INDEX.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_INDEX.md",
+        "Rel":  "README/README_INDEX.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_PREFLIGHT.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_PREFLIGHT.md",
+        "Rel":  "README/README_PREFLIGHT.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_PREFLIGHT_V2.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_PREFLIGHT_V2.md",
+        "Rel":  "README/README_PREFLIGHT_V2.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_RUN_TESTS.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_RUN_TESTS.md",
+        "Rel":  "README/README_RUN_TESTS.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_TESTS_CORE_ONLY.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_TESTS_CORE_ONLY.md",
+        "Rel":  "README/README_TESTS_CORE_ONLY.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_TESTS_FIX.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_TESTS_FIX.md",
+        "Rel":  "README/README_TESTS_FIX.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_TESTS_HOTFIX.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_TESTS_HOTFIX.md",
+        "Rel":  "README/README_TESTS_HOTFIX.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_TESTS_PHASE_A.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_TESTS_PHASE_A.md",
+        "Rel":  "README/README_TESTS_PHASE_A.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_TESTS_PHASE_A_FULLREFRESH.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_TESTS_PHASE_A_FULLREFRESH.md",
+        "Rel":  "README/README_TESTS_PHASE_A_FULLREFRESH.md",
+        "Group":  "README"
+    },
+    {
+        "From":  "G:/Bot/almost/README/README_TESTS_PHASE_B_CONTRACTS.md",
+        "To":  "G:/Bot/almost/docs/imported/README/README_TESTS_PHASE_B_CONTRACTS.md",
+        "Rel":  "README/README_TESTS_PHASE_B_CONTRACTS.md",
+        "Group":  "README"
+    }
+]

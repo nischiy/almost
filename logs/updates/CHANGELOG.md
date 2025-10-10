@@ -1,0 +1,14 @@
+- 2025-09-23T23:25:02.984672+00:00 — **EntryPoint v5** — files: app/entrypoint.py
+  - Removed pre-run service gate; delegated wiring to TraderApp.
+- 2025-09-23T23:25:02.984699+00:00 — **Telemetry health fix** — files: core/telemetry/health.py
+  - Fixed f-string SyntaxError; unified JSONL+stdout logging.
+- 2025-09-23T23:25:02.984708+00:00 — **Execution import resolution** — files: app/run.py
+  - Robust resolution of Execution class names + constructor fallbacks.
+- 2025-09-23T23:25:02.984714+00:00 — **MarketData public REST fallback** — files: app/services/market_data.py
+  - Added Binance /api/v3/klines fallback via urllib; no extra deps.
+- 2025-09-23T23:25:02.984765+00:00 — **Signal adds SL/TP** — files: app/services/signal.py
+  - ATR-based SL/TP calculation added to decision.
+- 2025-09-23T23:25:02.984770+00:00 — **Run wiring diagnostics** — files: app/run.py
+  - Explicit error logs for service wiring; no silent pass.
+- 2025-09-23T23:29:18.686716+00:00 — **Add OCO execution (paper)** — files: app/services/execution.py
+  - Simulate SL/TP as OCO on paper mode

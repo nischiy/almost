@@ -1,0 +1,80 @@
+{"ts": "2025-09-27T05:38:33.269251+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T05:38:33.273693+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T06:03:25.469354+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T06:03:25.473011+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T06:05:22.825615+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T06:05:22.829473+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T06:17:15.790333+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T06:17:15.794011+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T06:17:21.448421+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T06:17:21.452187+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T06:21:41.133803+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T06:29:26.320010+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T06:29:26.323482+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T06:29:26.760660+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T06:33:54.536365+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T06:33:54.540527+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T06:33:54.949048+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T06:58:28.730690+00:00", "kind": "kill", "reason": "manual test", "context": {}}
+{"ts": "2025-09-27T06:58:32.168080+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T10:57:16.462693+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T10:57:16.466418+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T10:57:16.958214+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T10:57:19.674752+00:00", "kind": "kill", "reason": "manual test", "context": {}}
+{"ts": "2025-09-27T10:57:23.122438+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T11:22:21.825020+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T11:22:21.828868+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T11:22:22.311680+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T12:49:49.763018+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T12:49:49.766619+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T12:49:50.191778+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T13:02:16.133175+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T13:02:16.136918+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T13:02:16.558353+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T13:13:10.049894+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T13:13:10.756681+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T13:13:16.163556+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T13:13:17.274364+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T13:13:17.300236+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T13:13:17.303835+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T13:13:17.786251+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T16:21:40.427962+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T16:21:42.446155+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T16:21:42.476176+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T16:21:42.480554+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T16:21:42.955507+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T16:23:39.140186+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T16:23:44.369170+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T16:23:44.396263+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T16:23:44.400233+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T16:23:44.960491+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T16:37:35.602026+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T16:37:38.933346+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T16:37:38.964224+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T16:37:38.968529+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T16:37:39.419179+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:22:57.361710+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T17:23:19.902697+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T17:23:20.034987+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:23:20.038906+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T17:23:30.563524+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:29:02.444758+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T17:29:05.864481+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T17:29:05.992104+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:29:05.995802+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T17:29:06.574139+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:32:21.697980+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T17:32:26.914191+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T17:32:26.939571+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:32:26.943250+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T17:32:37.627803+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:36:20.787136+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T17:36:28.716005+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T17:36:28.741178+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:36:28.744843+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T17:36:39.282562+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:38:20.785317+00:00", "kind": "kill", "reason": "pytest kill-switch", "context": {}}
+{"ts": "2025-09-27T17:38:21.716436+00:00", "kind": "resume", "reason": "manual clear"}
+{"ts": "2025-09-27T17:38:21.741678+00:00", "ok": true, "level": "INFO", "message": "ok"}
+{"ts": "2025-09-27T17:38:21.745374+00:00", "ok": true, "level": "INFO", "message": "unit-test"}
+{"ts": "2025-09-27T17:38:22.401883+00:00", "ok": true, "level": "INFO", "message": "ok"}
