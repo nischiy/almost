@@ -25,4 +25,6 @@ def normalize_decision(raw: Dict[str, Any] | None, *, fallback_reason: str | Non
     out["action"] = side
     if fallback_reason and "reason" not in out:
         out["reason"] = fallback_reason
+    if "reasons" not in out and "reason" in out:
+        out["reasons"] = [out["reason"]]
     return out

@@ -95,6 +95,11 @@ def _normalize_decision(raw: Dict[str, Any], fallback_reason: str) -> Dict[str, 
     out = normalize_decision(raw, fallback_reason=fallback_reason)
     if "size_usd" not in out:
         out["size_usd"] = out.get("size") if "size" in out else None
+    if out.get("size_usd") is None:
+        try:
+            out["size_usd"] = float(os.getenv("ORDER_QTY_USD", "0") or 0.0)
+        except Exception:
+            out["size_usd"] = 0.0
     out.setdefault("sl", None)
     out.setdefault("tp", None)
     return out
@@ -144,8 +149,10 @@ class SignalService:
             raw = fn(df, merged)  # очікується dict
             if not isinstance(raw, dict):
                 raise TypeError(f"strategy '{name}' returned non-dict: {type(raw)}")
-            return _normalize_decision(raw, fallback_reason=name)
+            decision = _normalize_decision(raw, fallback_reason=name)
+            decision.setdefault("strategy", name)
+            return decision
         except Exception as e:
             # Не валимо застосунок: фейл стратегії = HOLD
             self.log.error("Strategy '%s' failed: %s", name, e, exc_info=True)
-            return {"side": "HOLD", "action": "HOLD", "reason": f"{name}:error", "sl": None, "tp": None, "size_usd": None}
+            return {"side": "HOLD", "action": "HOLD", "reason": f"{name}:error", "sl": None, "tp": None, "size_usd": float(os.getenv("ORDER_QTY_USD", "0") or 0.0), "strategy": name}

@@ -44,6 +44,18 @@ def generate_signal(df: pd.DataFrame, params: Dict[str, Any]) -> Dict[str, Any]:
     rsi = _rsi(close, rsi_p)
     atr = _atr(df, atr_p)
 
+    reasons = []
+    if e_fast.iloc[-1] > e_slow.iloc[-1]:
+        reasons.append("ema_fast>ema_slow")
+    else:
+        reasons.append("ema_fast<=ema_slow")
+    if rsi.iloc[-1] > rsi_hi:
+        reasons.append("rsi>rsi_sell")
+    elif rsi.iloc[-1] < rsi_lo:
+        reasons.append("rsi<rsi_buy")
+    else:
+        reasons.append("rsi_in_range")
+
     if e_fast.iloc[-1] > e_slow.iloc[-1] and rsi.iloc[-1] > rsi_hi:
         side = "LONG"
     elif e_fast.iloc[-1] < e_slow.iloc[-1] and rsi.iloc[-1] < rsi_lo:
@@ -62,6 +74,8 @@ def generate_signal(df: pd.DataFrame, params: Dict[str, Any]) -> Dict[str, Any]:
         "ema_slow": float(e_slow.iloc[-1]),
         "rsi": float(rsi.iloc[-1]),
         "atr": float(atr.iloc[-1]) if not atr.empty else None,
+        "reasons": reasons,
+        "reason": "; ".join(reasons),
     }
 
     last_atr = decision["atr"]
