@@ -34,6 +34,7 @@ import uuid
 import logging
 import importlib
 import os
+import json
 from typing import Dict, Any, Callable, Optional, Tuple, List
 
 from core.config.env import get_bool
@@ -206,6 +207,7 @@ def validate_preflight(snapshot: Dict[str, Any]) -> List[str]:
     step_size = filters.get("step_size")
     min_qty = filters.get("min_qty")
     min_notional = filters.get("min_notional")
+    tick_size = filters.get("tick_size")
     if step_size is None or float(step_size or 0.0) <= 0:
         detail = filters.get("reason") or filters.get("source")
         rejects.append(f"missing_filter_step_size:{detail}" if detail else "missing_filter_step_size")
@@ -215,6 +217,9 @@ def validate_preflight(snapshot: Dict[str, Any]) -> List[str]:
     if min_notional is None or float(min_notional or 0.0) < 0:
         detail = filters.get("reason") or filters.get("source")
         rejects.append(f"missing_filter_min_notional:{detail}" if detail else "missing_filter_min_notional")
+    if tick_size is None or float(tick_size or 0.0) <= 0:
+        detail = filters.get("reason") or filters.get("source")
+        rejects.append(f"missing_filter_tick_size:{detail}" if detail else "missing_filter_tick_size")
     return rejects
 
 def preflight_read(symbol: str, wallet_usdt: Optional[float] = None) -> Dict[str, Any]:
@@ -269,16 +274,22 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
         data_sources = sizer.get("data_sources") or {}
         equity_meta = data_sources.get("equity") or {}
         filters_meta = data_sources.get("filters") or {}
-        log.info(
-            "decision equity_usd=%s source=%s filters_source=%s step_size=%s min_qty=%s min_notional=%s blockers=%s",
-            equity_meta.get("value"),
-            equity_meta.get("source"),
-            filters_meta.get("source"),
-            filters_meta.get("step_size"),
-            filters_meta.get("min_qty"),
-            filters_meta.get("min_notional"),
-            preview.get("blockers") or [],
-        )
+        log_payload = {
+            "strategy": kwargs.get("strategy"),
+            "action": kwargs.get("action") or side,
+            "reasons": kwargs.get("reasons") or kwargs.get("reason"),
+            "equity_usd": {"value": equity_meta.get("value"), "source": equity_meta.get("source")},
+            "price": {"value": data_sources.get("price", {}).get("value"), "source": data_sources.get("price", {}).get("source")},
+            "filters": {"source": filters_meta.get("source")},
+            "risk_usd": sizer.get("risk_usd"),
+            "qty_min": sizer.get("qty_min"),
+            "qty_final": sizer.get("qty_final") or sizer.get("qty"),
+            "sl_base": sizer.get("sl_base"),
+            "sl_final": sizer.get("sl_final"),
+            "leverage_selected": sizer.get("leverage_selected") or sizer.get("leverage"),
+            "blockers": preview.get("blockers") or [],
+        }
+        log.info("order_decision: %s", json.dumps(log_payload, sort_keys=True))
     except Exception:
         pass
 

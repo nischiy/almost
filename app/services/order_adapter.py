@@ -165,9 +165,11 @@ def _offline_filters(symbol: str) -> Dict[str, dict]:
         f"OFFLINE_MIN_NOTIONAL_{sym}",
         _env_float("OFFLINE_MIN_NOTIONAL", float(base["min_notional"])),
     )
+    tick_size = _env_float(f"OFFLINE_TICK_SIZE_{sym}", _env_float("OFFLINE_TICK_SIZE", 0.1))
     return {
         "LOT_SIZE": {"minQty": f"{min_qty}", "stepSize": f"{step}"},
         "MIN_NOTIONAL": {"notional": f"{min_notional}"},
+        "PRICE_FILTER": {"tickSize": f"{tick_size}"},
     }
 
 def _http_json(url: str, timeout: int = 10) -> dict:
@@ -269,17 +271,18 @@ def preflight_market_data(symbol: str) -> Dict[str, Any]:
     price_snap = _get_price_snapshot(symbol, allow_fallback=allow_fallback)
     filters_snap = _get_filters_snapshot(symbol, allow_fallback=allow_fallback)
     filters_map = filters_snap.get("value")
-    step_size, min_qty, min_notional = _extract_filter_values(filters_map)
+    step_size, min_qty, min_notional, tick_size = _extract_filter_values(filters_map)
     filters_snap = {
         **filters_snap,
         "raw": filters_map,
         "step_size": step_size,
         "min_qty": min_qty,
         "min_notional": min_notional,
+        "tick_size": tick_size,
     }
     return {"price": price_snap, "filters": filters_snap}
 
-def _extract_filter_values(filters: Dict[str, dict] | None) -> Tuple[float, float, float]:
+def _extract_filter_values(filters: Dict[str, dict] | None) -> Tuple[float, float, float, float]:
     fmap = filters or {}
     lot = fmap.get("LOT_SIZE") or {}
     step_size = float(lot.get("stepSize", 0.0)) if lot else 0.0
@@ -288,7 +291,24 @@ def _extract_filter_values(filters: Dict[str, dict] | None) -> Tuple[float, floa
     if min_notional_raw is None:
         min_notional_raw = (fmap.get("MIN_NOTIONAL") or {}).get("minNotional")
     min_notional = float(min_notional_raw or 0.0)
-    return step_size, min_qty, min_notional
+    price_filter = fmap.get("PRICE_FILTER") or {}
+    tick_size = float(price_filter.get("tickSize", 0.0)) if price_filter else 0.0
+    return step_size, min_qty, min_notional, tick_size
+
+def _round_price_toward_entry(price: float, entry: float, tick_size: float, side: str) -> float:
+    if tick_size <= 0:
+        return price
+    if side == "BUY":
+        rounded = _round_up_to_step(price, tick_size)
+        if rounded >= entry:
+            rounded = entry - tick_size
+        return rounded
+    if side == "SELL":
+        rounded = _round_down_to_step(price, tick_size)
+        if rounded <= entry:
+            rounded = entry + tick_size
+        return rounded
+    return price
 
 def _apply_atr_budget(
     sized,
@@ -471,6 +491,7 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
     filter_step_size = filters_snap.get("step_size") or 0.0
     filter_min_qty = filters_snap.get("min_qty") or 0.0
     filter_min_notional = filters_snap.get("min_notional") or 0.0
+    filter_tick_size = filters_snap.get("tick_size") or 0.0
     if price_val is None or filters_map is None:
         blockers.append("stale_or_missing_exchange_data")
 
@@ -568,6 +589,111 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
             atr_blocked = True
             blockers.append("atr_budget: cap_below_exchange_min")
 
+    qty_raw = None
+    qty_final = None
+
+    # --- Risk-manager sizing (SL adaptive for exchange mins) ---
+    risk_manager_meta = None
+    risk_manager_blocked = False
+    risk_sizing_applied = False
+    sl_base_raw = kw.get("sl_base")
+    if sl_base_raw is None:
+        sl_base_raw = kw.get("sl")
+    if sl_base_raw is None:
+        sl_base_raw = kw.get("stop_loss")
+    if sl_base_raw is None:
+        sl_base_raw = kw.get("stopPrice")
+    entry_raw = kw.get("entry")
+    if entry_raw is None:
+        entry_raw = kw.get("price")
+    if entry_raw is None:
+        entry_raw = price_val
+    risk_pct = _env_optional_float("RISK_PER_TRADE_PCT")
+    min_sl_ticks = _env_optional_int("MIN_SL_TICKS")
+    if min_sl_ticks is None:
+        min_sl_ticks = 10
+    max_margin_util_pct = _env_optional_float("MAX_MARGIN_UTIL_PCT")
+    if max_margin_util_pct is None:
+        max_margin_util_pct = 30.0
+    max_leverage_env = _env_optional_int("MAX_LEVERAGE")
+    if max_leverage_env is None:
+        max_leverage_env = int(preferred_max_leverage)
+
+    entry = float(entry_raw or 0.0)
+    sl_base = float(sl_base_raw or 0.0) if sl_base_raw is not None else None
+    tick_size = float(filter_tick_size or 0.0)
+    step_size = float(filter_step_size or 0.0)
+    min_qty = float(filter_min_qty or 0.0)
+    min_notional = float(filter_min_notional or 0.0)
+    risk_usd = None
+    if equity_usd > 0 and risk_pct is not None:
+        risk_usd = equity_usd * (risk_pct / 100.0)
+
+    if ps_mode != "atr_budget" and sl_base is not None and entry > 0 and risk_usd is not None and min_qty > 0 and step_size > 0:
+        qty_min_notional = (min_notional / entry) if min_notional > 0 else 0.0
+        qty_min = max(min_qty, qty_min_notional)
+        qty_min = _round_up_to_step(qty_min, step_size)
+        if qty_min * entry < min_notional:
+            qty_min = _round_up_to_step(min_notional / entry, step_size)
+        delta_base = abs(entry - sl_base)
+        delta_max = (risk_usd / qty_min) if qty_min > 0 else 0.0
+        delta_min = float(min_sl_ticks) * tick_size if tick_size > 0 else 0.0
+        sl_final = sl_base
+        if delta_max <= 0 or qty_min <= 0:
+            blockers.append("invalid_sizing: qty_min_or_delta_invalid")
+            risk_manager_blocked = True
+        elif delta_max < delta_min:
+            blockers.append("min_notional_requires_too_tight_sl")
+            risk_manager_blocked = True
+        else:
+            if delta_base > delta_max:
+                if side == "BUY":
+                    sl_final = entry - delta_max
+                elif side == "SELL":
+                    sl_final = entry + delta_max
+            sl_final = _round_price_toward_entry(float(sl_final), entry, tick_size, side)
+        delta_used = abs(entry - float(sl_final)) if sl_final is not None else None
+        notional = qty_min * entry
+        margin_limit = equity_usd * (max_margin_util_pct / 100.0) if equity_usd > 0 else 0.0
+        leverage_needed = math.ceil(notional / margin_limit) if margin_limit > 0 else max_leverage_env + 1
+        leverage_selected = int(_clip(leverage_needed, 1, max_leverage_env))
+        margin_used = (notional / leverage_selected) if leverage_selected > 0 else 0.0
+        if margin_limit <= 0 or (leverage_selected >= max_leverage_env and margin_used > margin_limit):
+            blockers.append("insufficient_margin")
+            risk_manager_blocked = True
+        if not risk_manager_blocked:
+            sized.qty = float(qty_min)
+            sized.notional = float(notional)
+            sized.leverage = int(leverage_selected)
+            sized.margin_used = float(margin_used)
+            sized.min_leverage_needed = int(leverage_needed)
+            risk_sizing_applied = True
+            qty_final = float(qty_min)
+            qty_raw = float(qty_min)
+        risk_manager_meta = {
+            "risk_usd": risk_usd,
+            "delta_base": delta_base,
+            "delta_max": delta_max,
+            "delta_min": delta_min,
+            "delta_used": delta_used,
+            "qty_min": qty_min,
+            "qty_final": qty_min if risk_sizing_applied else None,
+            "sl_base": sl_base,
+            "sl_final": float(sl_final) if sl_final is not None else None,
+            "entry": entry,
+            "tick_size": tick_size,
+            "step_size": step_size,
+            "min_qty": min_qty,
+            "min_notional": min_notional,
+            "notional": notional,
+            "margin_used": margin_used,
+            "margin_limit": margin_limit,
+            "leverage_selected": leverage_selected,
+            "max_leverage": max_leverage_env,
+        }
+    elif ps_mode != "atr_budget" and sl_base is not None:
+        blockers.append("missing_risk_inputs")
+
     # --- USD-based sizing from env/equity (deterministic) ---
     # Formula:
     #   risk_usd = equity_usd * (RISK_PER_TRADE_PCT / 100)
@@ -596,14 +722,19 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
     if not sizing_inputs_present:
         target_usd = None
 
-    qty_raw = None
-    qty_final = None
     sizing_blocked = False
     price_val = float(getattr(sized, "price", 0.0) or 0.0)
     lot_step = float(getattr(sized, "lot_step", 0.0) or 0.0)
     min_qty = float(getattr(sized, "min_qty", 0.0) or 0.0)
     min_notional = float(getattr(sized, "min_notional", 0.0) or 0.0)
-    if sizing_inputs_present and ps_mode != "atr_budget" and target_usd is not None and target_usd > 0 and price_val > 0:
+    if (
+        sizing_inputs_present
+        and ps_mode != "atr_budget"
+        and not risk_sizing_applied
+        and target_usd is not None
+        and target_usd > 0
+        and price_val > 0
+    ):
         qty_raw = target_usd / price_val
         qty_final = _round_down_to_step(qty_raw, lot_step) if lot_step > 0 else qty_raw
         if qty_final <= 0 or qty_final < min_qty:
@@ -662,7 +793,15 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
             )
         )
 
-    if ok and side_ok and qty_ok and not atr_blocked and not sizing_blocked and (otype != "LIMIT" or price is not None):
+    if (
+        ok
+        and side_ok
+        and qty_ok
+        and not atr_blocked
+        and not sizing_blocked
+        and not risk_manager_blocked
+        and (otype != "LIMIT" or price is not None)
+    ):
         payload = {
             "symbol": symbol,
             "side": side,
@@ -682,7 +821,22 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
         "notional": sized.notional, "margin_used": sized.margin_used, "margin_cap": sized.margin_cap,
         "price": sized.price, "lot_step": sized.lot_step, "step_size": sized.lot_step,
         "min_qty": sized.min_qty, "min_notional": sized.min_notional,
-        "size_usd": target_usd, "qty_raw": qty_raw, "qty_final": qty_final
+        "size_usd": target_usd, "qty_raw": qty_raw, "qty_final": qty_final,
+        "qty_min": risk_manager_meta.get("qty_min") if risk_manager_meta else None,
+        "sl_base": risk_manager_meta.get("sl_base") if risk_manager_meta else None,
+        "sl_final": risk_manager_meta.get("sl_final") if risk_manager_meta else None,
+        "risk_usd": risk_manager_meta.get("risk_usd") if risk_manager_meta else risk_usd,
+        "delta_used": risk_manager_meta.get("delta_used") if risk_manager_meta else None,
+        "notional_risk": risk_manager_meta.get("notional") if risk_manager_meta else None,
+        "margin_used_risk": risk_manager_meta.get("margin_used") if risk_manager_meta else None,
+        "margin_limit": risk_manager_meta.get("margin_limit") if risk_manager_meta else None,
+        "leverage_selected": risk_manager_meta.get("leverage_selected") if risk_manager_meta else None,
+        "exchange_filters": {
+            "step_size": filter_step_size,
+            "min_qty": filter_min_qty,
+            "min_notional": filter_min_notional,
+            "tick_size": filter_tick_size,
+        },
     }
     sizer_block["data_sources"] = {
         "equity": {"value": equity_usd, "source": equity_source, "reason": equity_reason},
@@ -693,10 +847,13 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
             "step_size": filter_step_size,
             "min_qty": filter_min_qty,
             "min_notional": filter_min_notional,
+            "tick_size": filter_tick_size,
         },
     }
     if atr_budget_meta is not None:
         sizer_block["atr_budget"] = atr_budget_meta
+    if risk_manager_meta is not None:
+        sizer_block["risk_manager"] = risk_manager_meta
 
     return {
         "risk_gate": {"can_trade": ok, "reason": reason, "state": {}, "limits": limits_repr},

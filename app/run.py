@@ -384,6 +384,18 @@ def _log_tick_summary(logger: logging.Logger, decision: Dict[str, Any], strategy
     reasons = decision.get("reasons")
     if not reasons:
         reasons = [decision.get("reason")] if decision.get("reason") else []
+    risk_pct = None
+    try:
+        risk_pct = float(str(get_env("RISK_PER_TRADE_PCT", "")).strip())
+    except Exception:
+        risk_pct = None
+    equity_val = account.get("equity_usd")
+    risk_usd = None
+    if equity_val is not None and risk_pct is not None:
+        try:
+            risk_usd = float(equity_val) * (float(risk_pct) / 100.0)
+        except Exception:
+            risk_usd = None
     payload = {
         "strategy": strategy,
         "action": decision.get("action") or decision.get("side"),
@@ -398,6 +410,7 @@ def _log_tick_summary(logger: logging.Logger, decision: Dict[str, Any], strategy
             "step_size": filters.get("step_size"),
             "min_qty": filters.get("min_qty"),
             "min_notional": filters.get("min_notional"),
+            "tick_size": filters.get("tick_size"),
             "source": filters.get("source"),
             "ts": filters.get("ts"),
         },
@@ -405,6 +418,14 @@ def _log_tick_summary(logger: logging.Logger, decision: Dict[str, Any], strategy
             "last": price.get("value"),
             "source": price.get("source"),
             "ts": price.get("ts"),
+        },
+        "risk": {
+            "risk_usd": risk_usd,
+            "qty_min": None,
+            "qty_final": decision.get("qty"),
+            "sl_base": decision.get("sl"),
+            "sl_final": None,
+            "leverage_selected": None,
         },
         "execution": execution,
     }
