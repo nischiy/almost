@@ -8,10 +8,7 @@ from typing import Any, Dict, Callable, Optional
 import pandas as pd
 
 # 1) Джерело дефолтних параметрів (підтримує обидві сигнатури: get_best_params() та get_best_params(name))
-try:
-    from core.config.best_params import get_best_params  # type: ignore
-except Exception as e:
-    raise RuntimeError(f"Cannot import core.config.best_params.get_best_params: {e}")
+from core.config.best_params import get_best_params  # type: ignore
 
 log = logging.getLogger("SignalService")
 
@@ -90,14 +87,14 @@ def _best_params_for(name: str) -> Dict[str, Any]:
 
 
 def _normalize_side(v: Any) -> str:
-    """Приводимо будь-які варіанти до BUY/SELL/HOLD."""
+    """Приводимо будь-які варіанти до LONG/SHORT/HOLD."""
     if v is None:
         return "HOLD"
     s = str(v).strip().upper()
     if s in ("BUY", "LONG"):
-        return "BUY"
+        return "LONG"
     if s in ("SELL", "SHORT"):
-        return "SELL"
+        return "SHORT"
     return "HOLD"
 
 

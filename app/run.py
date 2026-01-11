@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import logging
+import inspect
 from importlib import import_module
 from typing import Callable, Optional, Any, Dict
 
@@ -97,20 +98,26 @@ class TraderApp:
         # execution
         if getattr(self, "exe", None) and hasattr(self.exe, "place"):
             try:
-                side = str(decision.get("side", "HOLD")).upper()
-                if side == "HOLD":
+                side = decision.get("side") or decision.get("action") or "HOLD"
+                side = str(side).upper()
+                if side in {"HOLD", "FLAT", "NONE"}:
                     self.log.info("run_once: HOLD — nothing to execute")
                     return
-                otype = decision.get("type") or decision.get("otype") or "MARKET"
-                wallet_usdt = decision.get("wallet_usdt")
-                if wallet_usdt is None:
-                    wallet_usdt = float(os.getenv("WALLET_USDT", "1000"))
+                sig = inspect.signature(self.exe.place)
+                params = [p for p in sig.parameters.values() if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
+                if len(params) <= 1:
+                    res = self.exe.place(decision)
+                else:
+                    otype = decision.get("type") or decision.get("otype") or "MARKET"
+                    wallet_usdt = decision.get("wallet_usdt")
+                    if wallet_usdt is None:
+                        wallet_usdt = float(os.getenv("WALLET_USDT", "1000"))
 
-                # приберемо дублікати ключів, які передаємо позиційно
-                drop = {"side", "type", "otype", "wallet_usdt", "symbol"}
-                kwargs = {k: v for k, v in decision.items() if k not in drop}
+                    # приберемо дублікати ключів, які передаємо позиційно
+                    drop = {"side", "type", "otype", "wallet_usdt", "symbol"}
+                    kwargs = {k: v for k, v in decision.items() if k not in drop}
 
-                res = self.exe.place(self.symbol, side, otype, wallet_usdt, **kwargs)
+                    res = self.exe.place(self.symbol, side, otype, wallet_usdt, **kwargs)
                 if isinstance(res, dict):
                     self.log.info("execution: submitted=%s reason=%s", res.get("submitted"), res.get("reason"))
                 else:

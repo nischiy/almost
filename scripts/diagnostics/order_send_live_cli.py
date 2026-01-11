@@ -4,6 +4,7 @@ from __future__ import annotations
 import os, sys, json, time
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
+import importlib.util
 
 _THIS = Path(__file__).resolve()
 _PROJ_ROOT = _THIS.parents[2]
@@ -15,14 +16,14 @@ if str(_PROJ_ROOT) not in sys.path: sys.path.insert(0, str(_PROJ_ROOT))
 if str(_UTILS_DIR) not in sys.path: sys.path.insert(0, str(_UTILS_DIR))
 
 # Load builders
-try:
-from app.services.order_adapter import build_order
-except Exception:
+if importlib.util.find_spec("app.services.order_adapter"):
+    from app.services.order_adapter import build_order
+else:
     build_order = SourceFileLoader("order_adapter", str(_ADAPTER_PATH)).load_module().build_order
 
-try:
-from app.services.bridge import place_order_fixed
-except Exception:
+if importlib.util.find_spec("app.services.bridge"):
+    from app.services.bridge import place_order_fixed
+else:
     place_order_fixed = SourceFileLoader("live_bridge", str(_BRIDGE_PATH)).load_module().place_order_fixed
 
 def envf(name: str, default=None, cast=float):
@@ -80,5 +81,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 

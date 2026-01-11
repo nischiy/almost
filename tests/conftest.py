@@ -20,6 +20,13 @@ import numpy as np
 
 # ---- Стабілізація CWD та sys.path для кожного тесту ----
 _ROOT = Path(__file__).resolve().parents[1]
+_ROOT_STR = str(_ROOT)
+if _ROOT_STR not in sys.path:
+    sys.path.insert(0, _ROOT_STR)
+try:
+    os.chdir(_ROOT)
+except Exception:
+    pass
 
 @pytest.fixture(autouse=True, scope="function")
 def _force_root_cwd_and_syspath() -> Iterator[None]:

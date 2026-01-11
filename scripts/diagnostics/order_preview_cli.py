@@ -4,6 +4,7 @@ from __future__ import annotations
 import os, sys, json
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
+import importlib.util
 
 _THIS = Path(__file__).resolve()
 _PROJ_ROOT = _THIS.parents[2]
@@ -16,9 +17,9 @@ if str(_PROJ_ROOT) not in sys.path:
 if str(_UTILS_DIR) not in sys.path:
     sys.path.insert(0, str(_UTILS_DIR))
 
-try:
-from app.services.order_adapter import build_order  # normal import
-except Exception:
+if importlib.util.find_spec("app.services.order_adapter"):
+    from app.services.order_adapter import build_order  # normal import
+else:
     mod = SourceFileLoader("order_adapter", str(_ADAPTER_PATH)).load_module()
     build_order = mod.build_order
 
@@ -61,4 +62,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

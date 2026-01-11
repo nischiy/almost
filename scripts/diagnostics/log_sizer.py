@@ -52,7 +52,7 @@ def compute():
     margin_cap = wallet * max(min(RISK_MARGIN_FRACTION, 1.0), 0.0)
     denom = margin_cap / (1.0 + fee_frac + buf) if margin_cap > 0 else 0.0
     min_lev = int(max(1, math.ceil(notional / denom))) if denom > 0 else 999999
-    lev = int(max(1, min(max(1, PREFERRED_MAX_LEVERAGE), max(1, min_lev)))))
+    lev = int(max(1, min(max(1, PREFERRED_MAX_LEVERAGE), max(1, min_lev))))
     margin_used = notional / lev * (1.0 + fee_frac + buf)
     return {
         "symbol": SYMBOL, "price": px, "lot_step": step, "min_qty": min_qty, "min_notional": min_notional,
