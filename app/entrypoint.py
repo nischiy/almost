@@ -5,15 +5,64 @@ import logging
 import sys
 from typing import Any
 from app.bootstrap import compose_trader_app, resolve_runtime_mode
-from core.config.env import load_dotenv_once
+from core.config.env import load_dotenv_once, parse_bool
 
 log = logging.getLogger("AppMain")
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(prog="app.entrypoint", add_help=True)
     p.add_argument("--once", action="store_true")
-    p.add_argument("--paper", action="store_true")
-    p.add_argument("--enabled", action="store_true")
+    paper_group = p.add_mutually_exclusive_group()
+    paper_group.add_argument(
+        "--paper",
+        dest="paper",
+        nargs="?",
+        const=True,
+        default=None,
+        type=parse_bool,
+        metavar="BOOL",
+        help="Enable paper trading (use env by default; optional BOOL like 1/0).",
+    )
+    paper_group.add_argument(
+        "--no-paper",
+        dest="paper",
+        action="store_false",
+        help="Disable paper trading (override env).",
+    )
+    trade_group = p.add_mutually_exclusive_group()
+    trade_group.add_argument(
+        "--enabled",
+        dest="enabled",
+        nargs="?",
+        const=True,
+        default=None,
+        type=parse_bool,
+        metavar="BOOL",
+        help="Enable trading (use env by default; optional BOOL like 1/0).",
+    )
+    trade_group.add_argument(
+        "--disabled",
+        dest="enabled",
+        action="store_false",
+        help="Disable trading (override env).",
+    )
+    dry_group = p.add_mutually_exclusive_group()
+    dry_group.add_argument(
+        "--dry-run",
+        dest="dry_run_only",
+        nargs="?",
+        const=True,
+        default=None,
+        type=parse_bool,
+        metavar="BOOL",
+        help="Enable dry-run mode (use env by default; optional BOOL like 1/0).",
+    )
+    dry_group.add_argument(
+        "--live",
+        dest="dry_run_only",
+        action="store_false",
+        help="Disable dry-run mode (override env).",
+    )
     p.add_argument("--symbol", type=str, default=None)
     p.add_argument("--strategy", type=str, default=None)
     p.add_argument("--sleep", type=float, default=None, metavar="SECS")
@@ -22,10 +71,12 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def _apply_overrides(args: Any) -> None:
     if getattr(args, "sleep", None) is not None:
         os.environ["LOOP_SLEEP_SEC"] = str(args.sleep)
-    if hasattr(args, "enabled"):
+    if getattr(args, "enabled", None) is not None:
         os.environ["TRADE_ENABLED"] = "1" if bool(args.enabled) else "0"
-    if hasattr(args, "paper"):
+    if getattr(args, "paper", None) is not None:
         os.environ["PAPER_TRADING"] = "1" if bool(args.paper) else "0"
+    if getattr(args, "dry_run_only", None) is not None:
+        os.environ["DRY_RUN_ONLY"] = "1" if bool(args.dry_run_only) else "0"
     if getattr(args, "symbol", None):
         os.environ["SYMBOL"] = str(args.symbol).upper().strip()
     if getattr(args, "strategy", None):
