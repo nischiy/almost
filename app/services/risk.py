@@ -3,20 +3,21 @@ from __future__ import annotations
 
 from typing import Any, Dict, Tuple
 
+from app.decision import normalize_side
+
 
 class RiskService:
     """Minimal, deterministic risk gate for tests and basic use."""
 
     def __init__(self) -> None:
-        self._hold_actions = {"HOLD", "FLAT", "NONE", "NOOP"}
-        self._trade_actions = {"BUY", "SELL", "LONG", "SHORT"}
+        self._hold_actions = {"HOLD"}
+        self._trade_actions = {"BUY", "SELL"}
 
     def can_open(self, decision: Dict[str, Any]) -> Tuple[bool, str]:
         if not isinstance(decision, dict):
             return False, "decision_not_dict"
 
-        action = decision.get("action") or decision.get("side") or "HOLD"
-        action = str(action).strip().upper()
+        action = normalize_side(decision.get("action") or decision.get("side") or "HOLD")
         if action in self._hold_actions:
             return False, "hold_action"
         if action not in self._trade_actions:

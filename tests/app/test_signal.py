@@ -10,6 +10,6 @@ def test_signal_decision_contains_required_keys(df_klines):
     })
     assert isinstance(decision, dict)
     assert "action" in decision
-    assert decision["action"] in {"LONG","SHORT","HOLD"}
-    # SL/TP may be present for LONG/SHORT; if hold, may be absent
+    assert decision["action"] in {"BUY","SELL","HOLD"}
+    # SL/TP may be present for BUY/SELL; if hold, may be absent
     assert "price" in decision and isinstance(decision["price"], float)

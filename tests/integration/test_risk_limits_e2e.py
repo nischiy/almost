@@ -10,7 +10,7 @@ class FakeSIG:
     def __init__(self, price):
         self.price = price
     def decide(self, df, params):
-        return {"action":"LONG","price":float(self.price),"qty":0.001}
+        return {"action":"BUY","price":float(self.price),"qty":0.001}
 
 class CountingEXE:
     def __init__(self):

@@ -2,6 +2,8 @@ from __future__ import annotations
 import logging
 from typing import Dict, Any, Optional
 
+from app.decision import normalize_side
+
 class ExecutionService:
     def __init__(self, cfg=None, symbol: Optional[str]=None, logger: Optional[logging.Logger]=None):
         self.cfg = cfg
@@ -21,7 +23,7 @@ class ExecutionService:
                 d.mkdir(parents=True, exist_ok=True)
                 f = d / "orders.csv"
                 header = "ts,symbol,side,price,sl,tp"
-                side = (decision or {}).get("side") if isinstance(decision, dict) else None
+                side = normalize_side((decision or {}).get("side") or (decision or {}).get("action")) if isinstance(decision, dict) else None
                 price = (decision or {}).get("price") if isinstance(decision, dict) else None
                 sl = (decision or {}).get("sl") if isinstance(decision, dict) else None
                 tp = (decision or {}).get("tp") if isinstance(decision, dict) else None
@@ -33,8 +35,8 @@ class ExecutionService:
         except Exception:
             pass
 
-        act = (decision or {}).get("action")
-        if act in ("LONG", "SHORT"):
+        act = normalize_side((decision or {}).get("action") or (decision or {}).get("side"))
+        if act in ("BUY", "SELL"):
             self.log.info("PLACE %s %s qty=%s @%s", act, self.symbol or "", (decision or {}).get("qty"), (decision or {}).get("price"))
         else:
             self.log.info("SKIP action=%s", act)

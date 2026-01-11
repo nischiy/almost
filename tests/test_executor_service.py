@@ -7,7 +7,7 @@ def test_executor_paper_writes_csv(monkeypatch, tmp_path):
     monkeypatch.setenv("PAPER_TRADING","1")
     monkeypatch.setenv("TRADE_ENABLED","0")
     exe = ExecutorService("BTCUSDT")
-    decision = {"side":"LONG","price":100.0,"sl":99.0,"tp":101.5}
+    decision = {"side":"BUY","price":100.0,"sl":99.0,"tp":101.5}
     exe.place(decision)
     # Check files
     d = list((Path("logs")/"orders").glob("*/orders.csv"))
