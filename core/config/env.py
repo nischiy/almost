@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
@@ -37,9 +38,17 @@ def get_bool(name: str, default: bool = False, env: Optional[Mapping[str, str]] 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
+def _running_under_pytest() -> bool:
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        return True
+    return "pytest" in sys.modules
+
 
 def load_dotenv_once(*, override: bool = False) -> bool:
     global _DOTENV_STATUS
+    if _running_under_pytest():
+        _DOTENV_STATUS = False
+        return _DOTENV_STATUS
     if _DOTENV_STATUS is not None:
         return _DOTENV_STATUS
 
@@ -57,4 +66,3 @@ def load_dotenv_once(*, override: bool = False) -> bool:
 
 def dotenv_loaded() -> bool:
     return bool(_DOTENV_STATUS)
-
