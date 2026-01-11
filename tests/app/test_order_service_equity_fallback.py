@@ -15,6 +15,10 @@ def test_order_service_dry_run_builds_payload_with_wallet_equity(monkeypatch) ->
     assert res["reason"] == "dry_run"
     preview = res["preview"]
     assert isinstance(preview.get("order_payload"), dict)
+    sources = (preview.get("sizer") or {}).get("data_sources") or {}
+    assert sources.get("equity", {}).get("source") == "fallback"
+    assert sources.get("filters", {}).get("source") == "fallback"
+    assert sources.get("price", {}).get("source") == "fallback"
 
     gate = preview.get("risk_gate", {})
     assert gate.get("can_trade") is True

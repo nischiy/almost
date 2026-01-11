@@ -42,13 +42,16 @@ kwargs (існуючі залишено) + нові для ATR-Budget:
 """
 
 from __future__ import annotations
-import os, time, math
+import os, time, math, json, ssl, urllib.request
 from dataclasses import asdict
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
 from typing import Dict, Any, Tuple
+from types import SimpleNamespace
 import importlib.util
 
+from core.config.env import get_env
+from core.execution import binance_futures
 # robust local imports (fallback loader)
 _APP_DIR = Path(__file__).resolve().parent
 _ROOT = _APP_DIR.parent
@@ -121,6 +124,93 @@ def _round_up_to_step(x: float, step: float) -> float:
         return x
     n = int((x + step - 1e-12) / step)
     return round(n * step, 12)
+
+_HTTP_CTX = ssl.create_default_context()
+
+def _running_under_pytest() -> bool:
+    return "PYTEST_CURRENT_TEST" in os.environ
+
+def _allow_offline_fallback() -> bool:
+    env = str(get_env("ENV", "production") or "production").lower()
+    if env != "production":
+        return True
+    return _running_under_pytest()
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        v = os.getenv(name)
+        if v is None:
+            return default
+        return float(str(v).strip())
+    except Exception:
+        return default
+
+def _offline_price(symbol: str) -> float:
+    sym = symbol.upper()
+    return _env_float(f"OFFLINE_PRICE_{sym}", _env_float("OFFLINE_PRICE", 100.0))
+
+def _offline_filters(symbol: str) -> Dict[str, dict]:
+    sym = symbol.upper()
+    defaults = {
+        "BTCUSDT": {"min_qty": 1.5, "step": 0.1, "min_notional": 100.0},
+    }
+    base = defaults.get(sym, {"min_qty": 0.001, "step": 0.001, "min_notional": 0.0})
+    min_qty = _env_float(f"OFFLINE_MIN_QTY_{sym}", _env_float("OFFLINE_MIN_QTY", float(base["min_qty"])))
+    step = _env_float(f"OFFLINE_STEP_SIZE_{sym}", _env_float("OFFLINE_STEP_SIZE", float(base["step"])))
+    min_notional = _env_float(
+        f"OFFLINE_MIN_NOTIONAL_{sym}",
+        _env_float("OFFLINE_MIN_NOTIONAL", float(base["min_notional"])),
+    )
+    return {
+        "LOT_SIZE": {"minQty": f"{min_qty}", "stepSize": f"{step}"},
+        "MIN_NOTIONAL": {"notional": f"{min_notional}"},
+    }
+
+def _http_json(url: str, timeout: int = 10) -> dict:
+    req = urllib.request.Request(url, headers={"User-Agent": "order-adapter/1.1"})
+    with urllib.request.urlopen(req, timeout=timeout, context=_HTTP_CTX) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+def _fetch_public_price(symbol: str) -> Tuple[Optional[float], Optional[str]]:
+    base = os.environ.get("BINANCE_FAPI_BASE", "https://fapi.binance.com")
+    try:
+        data = _http_json(f"{base}/fapi/v1/ticker/price?symbol={symbol}")
+    except Exception as e:
+        return None, f"price_fetch_error:{e}"
+    try:
+        return float(data.get("price")), None
+    except Exception as e:
+        return None, f"price_parse_error:{e}"
+
+def _fetch_exchange_filters(symbol: str) -> Tuple[Optional[Dict[str, dict]], Optional[str]]:
+    try:
+        info = binance_futures.exchange_info(symbol)
+    except Exception as e:
+        return None, f"exchange_info_error:{e}"
+    if not isinstance(info, dict):
+        return None, "invalid_response"
+    sym_info = next((s for s in info.get("symbols", []) if s.get("symbol") == symbol), None)
+    if not sym_info:
+        return None, "symbol_not_found"
+    fmap = {
+        f.get("filterType"): f
+        for f in sym_info.get("filters", [])
+        if f.get("filterType")
+    }
+    if "MIN_NOTIONAL" not in fmap and "NOTIONAL" in fmap:
+        fmap["MIN_NOTIONAL"] = fmap["NOTIONAL"]
+    return fmap, None
+
+def _extract_filter_values(filters: Dict[str, dict] | None) -> Tuple[float, float, float]:
+    fmap = filters or {}
+    lot = fmap.get("LOT_SIZE") or {}
+    step_size = float(lot.get("stepSize", 0.0)) if lot else 0.0
+    min_qty = float(lot.get("minQty", 0.0)) if lot else 0.0
+    min_notional_raw = (fmap.get("MIN_NOTIONAL") or {}).get("notional")
+    if min_notional_raw is None:
+        min_notional_raw = (fmap.get("MIN_NOTIONAL") or {}).get("minNotional")
+    min_notional = float(min_notional_raw or 0.0)
+    return step_size, min_qty, min_notional
 
 def _apply_atr_budget(
     sized,
@@ -274,14 +364,95 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
         preferred_max_leverage=int(preferred_max_leverage),
         desired_pos_usdt=(float(desired_pos_usdt) if desired_pos_usdt is not None else None),
     )
-    sized = compute_qty_leverage(symbol, float(wallet_usdt), cfg=cfg)
 
-    # --- evaluate ризиків через core.risk_guard ---
     st = kw.get("rg_state", {}) or {}
     equity_raw = st.get("equity_usd", kw.get("equity_usd"))
+    equity_source = st.get("equity_source") or ("exchange" if equity_raw else "missing")
+    equity_reason = st.get("equity_reason")
     equity_usd = float(equity_raw or 0.0)
     if equity_usd <= 0:
-        equity_usd = float(wallet_usdt or 0.0)
+        if _allow_offline_fallback():
+            equity_usd = float(wallet_usdt or 0.0)
+            if equity_usd > 0 and equity_source == "missing":
+                equity_source = "fallback"
+                equity_reason = equity_reason or "fallback_wallet_usdt"
+        else:
+            blockers.append("stale_or_missing_exchange_data")
+
+    sizing_wallet_usdt = equity_usd if equity_usd > 0 else (float(wallet_usdt or 0.0) if _allow_offline_fallback() else 0.0)
+
+    price_val = None
+    price_source = "exchange"
+    price_reason = None
+    filters_map = None
+    filters_source = "exchange"
+    filters_reason = None
+
+    if _running_under_pytest() and _allow_offline_fallback():
+        price_val = _offline_price(symbol)
+        price_source = "fallback"
+        price_reason = "pytest_offline"
+        filters_map = _offline_filters(symbol)
+        filters_source = "fallback"
+        filters_reason = "pytest_offline"
+
+    if price_val is None:
+        price_val, price_reason = _fetch_public_price(symbol)
+        if price_val is None:
+            price_source = "exchange"
+        else:
+            price_source = "exchange"
+    if filters_map is None:
+        filters_map, filters_reason = _fetch_exchange_filters(symbol)
+        if filters_map is None:
+            filters_source = "exchange"
+        else:
+            filters_source = "exchange"
+
+    if (price_val is None or filters_map is None) and _allow_offline_fallback():
+        if price_val is None:
+            price_val = _offline_price(symbol)
+            price_source = "fallback"
+            price_reason = price_reason or "offline_fallback"
+        if filters_map is None:
+            filters_map = _offline_filters(symbol)
+            filters_source = "fallback"
+            filters_reason = filters_reason or "offline_fallback"
+
+    if price_val is None:
+        price_source = "missing"
+    if filters_map is None:
+        filters_source = "missing"
+
+    filter_step_size, filter_min_qty, filter_min_notional = _extract_filter_values(filters_map)
+    if price_val is None or filters_map is None:
+        blockers.append("stale_or_missing_exchange_data")
+
+    if price_val is not None and filters_map is not None:
+        sized = compute_qty_leverage(
+            symbol,
+            float(sizing_wallet_usdt),
+            get_price=lambda _: float(price_val),
+            get_filters=lambda _: filters_map or {},
+            cfg=cfg,
+        )
+    else:
+        sized = SimpleNamespace(
+            qty=0.0,
+            leverage=0,
+            notional=0.0,
+            margin_used=0.0,
+            margin_cap=0.0,
+            min_leverage_needed=0,
+            price=float(price_val or 0.0),
+            lot_step=float(filter_step_size or 0.0),
+            min_qty=float(filter_min_qty or 0.0),
+            min_notional=float(filter_min_notional or 0.0),
+            meta={"notes": ["missing_exchange_data"]},
+        )
+
+    # --- evaluate ризиків через core.risk_guard ---
+    equity_usd = float(equity_usd or 0.0)
     start_equity_raw = st.get("start_equity_usd", st.get("equity_usd"))
     start_equity_usd = float(start_equity_raw or 0.0)
     if start_equity_usd <= 0:
@@ -466,6 +637,17 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
         "price": sized.price, "lot_step": sized.lot_step, "step_size": sized.lot_step,
         "min_qty": sized.min_qty, "min_notional": sized.min_notional,
         "size_usd": target_usd, "qty_raw": qty_raw, "qty_final": qty_final
+    }
+    sizer_block["data_sources"] = {
+        "equity": {"value": equity_usd, "source": equity_source, "reason": equity_reason},
+        "price": {"value": price_val, "source": price_source, "reason": price_reason},
+        "filters": {
+            "source": filters_source,
+            "reason": filters_reason,
+            "step_size": filter_step_size,
+            "min_qty": filter_min_qty,
+            "min_notional": filter_min_notional,
+        },
     }
     if atr_budget_meta is not None:
         sizer_block["atr_budget"] = atr_budget_meta

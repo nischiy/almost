@@ -150,10 +150,14 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
     rg_state = kwargs.get("rg_state") or {}
     if not isinstance(rg_state, dict):
         rg_state = {}
-    if not rg_state.get("equity_usd") and not _is_dry_run():
+    if not rg_state.get("equity_usd"):
         equity_usd, eq_reason = _fetch_equity_usd()
-        if equity_usd:
+        if equity_usd is not None:
             rg_state["equity_usd"] = equity_usd
+            rg_state.setdefault("equity_source", "exchange")
+        else:
+            rg_state["equity_usd"] = None
+            rg_state.setdefault("equity_source", "missing")
         if eq_reason:
             rg_state.setdefault("equity_reason", eq_reason)
 
@@ -170,6 +174,23 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
         "blockers": list(built.get("blockers") or []),
     })
     preview["block_reasons"] = list(preview.get("blockers") or [])
+    try:
+        sizer = preview.get("sizer") or {}
+        data_sources = sizer.get("data_sources") or {}
+        equity_meta = data_sources.get("equity") or {}
+        filters_meta = data_sources.get("filters") or {}
+        log.info(
+            "decision equity_usd=%s source=%s filters_source=%s step_size=%s min_qty=%s min_notional=%s blockers=%s",
+            equity_meta.get("value"),
+            equity_meta.get("source"),
+            filters_meta.get("source"),
+            filters_meta.get("step_size"),
+            filters_meta.get("min_qty"),
+            filters_meta.get("min_notional"),
+            preview.get("blockers") or [],
+        )
+    except Exception:
+        pass
 
     # 2) DRY-RUN: лише прев'ю без мережі (повертаємо навіть при блокерах)
     if _is_dry_run():
