@@ -365,11 +365,11 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
     qty_raw = None
     qty_final = None
     sizing_blocked = False
-    if sizing_inputs_present and ps_mode != "atr_budget" and target_usd is not None and target_usd > 0 and float(getattr(sized, "price", 0.0) or 0.0) > 0:
-        price_val = float(getattr(sized, "price", 0.0) or 0.0)
-        lot_step = float(getattr(sized, "lot_step", 0.0) or 0.0)
-        min_qty = float(getattr(sized, "min_qty", 0.0) or 0.0)
-        min_notional = float(getattr(sized, "min_notional", 0.0) or 0.0)
+    price_val = float(getattr(sized, "price", 0.0) or 0.0)
+    lot_step = float(getattr(sized, "lot_step", 0.0) or 0.0)
+    min_qty = float(getattr(sized, "min_qty", 0.0) or 0.0)
+    min_notional = float(getattr(sized, "min_notional", 0.0) or 0.0)
+    if sizing_inputs_present and ps_mode != "atr_budget" and target_usd is not None and target_usd > 0 and price_val > 0:
         qty_raw = target_usd / price_val
         qty_final = _round_down_to_step(qty_raw, lot_step) if lot_step > 0 else qty_raw
         if qty_final <= 0 or qty_final < min_qty:
@@ -446,7 +446,8 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
     sizer_block = {
         "qty": sized.qty, "leverage": sized.leverage, "min_leverage_needed": sized.min_leverage_needed,
         "notional": sized.notional, "margin_used": sized.margin_used, "margin_cap": sized.margin_cap,
-        "price": sized.price, "lot_step": sized.lot_step, "min_qty": sized.min_qty, "min_notional": sized.min_notional,
+        "price": sized.price, "lot_step": sized.lot_step, "step_size": sized.lot_step,
+        "min_qty": sized.min_qty, "min_notional": sized.min_notional,
         "size_usd": target_usd, "qty_raw": qty_raw, "qty_final": qty_final
     }
     if atr_budget_meta is not None:

@@ -156,8 +156,19 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
         "errors": list(built.get("errors") or []),
         "blockers": list(built.get("blockers") or []),
     }
+    preview["block_reasons"] = list(preview.get("blockers") or [])
 
     payload = preview["order_payload"]
+    # 2) DRY-RUN: лише прев'ю без мережі (повертаємо навіть при блокерах)
+    if _is_dry_run():
+        return {
+            "submitted": False,
+            "reason": "dry_run",
+            "preview": preview,
+            "block_reasons": preview.get("blockers") or [],
+            "network": {"set_leverage": None, "place_order": None},
+        }
+
     if not payload:
         # Немає чого відправляти (ризик/сайзер/валідація відсіяли)
         blockers = preview.get("blockers") or []
@@ -167,15 +178,7 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
             "submitted": False,
             "reason": "no_payload",
             "preview": preview,
-            "network": {"set_leverage": None, "place_order": None},
-        }
-
-    # 2) DRY-RUN: лише прев'ю без мережі
-    if _is_dry_run():
-        return {
-            "submitted": False,
-            "reason": "dry_run",
-            "preview": preview,
+            "block_reasons": blockers,
             "network": {"set_leverage": None, "place_order": None},
         }
 
