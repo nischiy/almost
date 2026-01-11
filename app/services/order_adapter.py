@@ -46,7 +46,7 @@ import os, time, math, json, ssl, urllib.request
 from dataclasses import asdict
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 from types import SimpleNamespace
 import importlib.util
 
@@ -126,6 +126,10 @@ def _round_up_to_step(x: float, step: float) -> float:
     return round(n * step, 12)
 
 _HTTP_CTX = ssl.create_default_context()
+_PRICE_CACHE: Dict[str, Dict[str, Any]] = {}
+_FILTERS_CACHE: Dict[str, Dict[str, Any]] = {}
+_PRICE_TTL_SEC = 10.0
+_FILTERS_TTL_SEC = 600.0
 
 def _running_under_pytest() -> bool:
     return "PYTEST_CURRENT_TEST" in os.environ
@@ -200,6 +204,80 @@ def _fetch_exchange_filters(symbol: str) -> Tuple[Optional[Dict[str, dict]], Opt
     if "MIN_NOTIONAL" not in fmap and "NOTIONAL" in fmap:
         fmap["MIN_NOTIONAL"] = fmap["NOTIONAL"]
     return fmap, None
+
+def _cached_snapshot(cache: Dict[str, Dict[str, Any]], symbol: str, ttl: float) -> Optional[Dict[str, Any]]:
+    if _running_under_pytest():
+        return None
+    now = time.time()
+    cached = cache.get(symbol)
+    if not cached:
+        return None
+    if now - float(cached.get("ts") or 0.0) > ttl:
+        return None
+    snap = dict(cached)
+    snap["source"] = "cache"
+    snap["origin"] = cached.get("source")
+    return snap
+
+def _get_price_snapshot(symbol: str, *, allow_fallback: bool) -> Dict[str, Any]:
+    cached = _cached_snapshot(_PRICE_CACHE, symbol, _PRICE_TTL_SEC)
+    if cached:
+        return cached
+    now = time.time()
+    if _running_under_pytest() and allow_fallback:
+        snap = {"value": _offline_price(symbol), "source": "fallback", "reason": "pytest_offline", "ts": now}
+        _PRICE_CACHE[symbol] = dict(snap)
+        return snap
+    price_val, price_reason = _fetch_public_price(symbol)
+    source = "exchange" if price_val is not None else "missing"
+    snap = {"value": price_val, "source": source, "reason": price_reason, "ts": now}
+    if price_val is None and allow_fallback:
+        snap = {
+            "value": _offline_price(symbol),
+            "source": "fallback",
+            "reason": price_reason or "offline_fallback",
+            "ts": now,
+        }
+    _PRICE_CACHE[symbol] = dict(snap)
+    return snap
+
+def _get_filters_snapshot(symbol: str, *, allow_fallback: bool) -> Dict[str, Any]:
+    cached = _cached_snapshot(_FILTERS_CACHE, symbol, _FILTERS_TTL_SEC)
+    if cached:
+        return cached
+    now = time.time()
+    if _running_under_pytest() and allow_fallback:
+        filters_map = _offline_filters(symbol)
+        snap = {"value": filters_map, "source": "fallback", "reason": "pytest_offline", "ts": now}
+        _FILTERS_CACHE[symbol] = dict(snap)
+        return snap
+    filters_map, filters_reason = _fetch_exchange_filters(symbol)
+    source = "exchange" if filters_map is not None else "missing"
+    snap = {"value": filters_map, "source": source, "reason": filters_reason, "ts": now}
+    if filters_map is None and allow_fallback:
+        snap = {
+            "value": _offline_filters(symbol),
+            "source": "fallback",
+            "reason": filters_reason or "offline_fallback",
+            "ts": now,
+        }
+    _FILTERS_CACHE[symbol] = dict(snap)
+    return snap
+
+def preflight_market_data(symbol: str) -> Dict[str, Any]:
+    allow_fallback = _allow_offline_fallback()
+    price_snap = _get_price_snapshot(symbol, allow_fallback=allow_fallback)
+    filters_snap = _get_filters_snapshot(symbol, allow_fallback=allow_fallback)
+    filters_map = filters_snap.get("value")
+    step_size, min_qty, min_notional = _extract_filter_values(filters_map)
+    filters_snap = {
+        **filters_snap,
+        "raw": filters_map,
+        "step_size": step_size,
+        "min_qty": min_qty,
+        "min_notional": min_notional,
+    }
+    return {"price": price_snap, "filters": filters_snap}
 
 def _extract_filter_values(filters: Dict[str, dict] | None) -> Tuple[float, float, float]:
     fmap = filters or {}
@@ -381,50 +459,18 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
 
     sizing_wallet_usdt = equity_usd if equity_usd > 0 else (float(wallet_usdt or 0.0) if _allow_offline_fallback() else 0.0)
 
-    price_val = None
-    price_source = "exchange"
-    price_reason = None
-    filters_map = None
-    filters_source = "exchange"
-    filters_reason = None
-
-    if _running_under_pytest() and _allow_offline_fallback():
-        price_val = _offline_price(symbol)
-        price_source = "fallback"
-        price_reason = "pytest_offline"
-        filters_map = _offline_filters(symbol)
-        filters_source = "fallback"
-        filters_reason = "pytest_offline"
-
-    if price_val is None:
-        price_val, price_reason = _fetch_public_price(symbol)
-        if price_val is None:
-            price_source = "exchange"
-        else:
-            price_source = "exchange"
-    if filters_map is None:
-        filters_map, filters_reason = _fetch_exchange_filters(symbol)
-        if filters_map is None:
-            filters_source = "exchange"
-        else:
-            filters_source = "exchange"
-
-    if (price_val is None or filters_map is None) and _allow_offline_fallback():
-        if price_val is None:
-            price_val = _offline_price(symbol)
-            price_source = "fallback"
-            price_reason = price_reason or "offline_fallback"
-        if filters_map is None:
-            filters_map = _offline_filters(symbol)
-            filters_source = "fallback"
-            filters_reason = filters_reason or "offline_fallback"
-
-    if price_val is None:
-        price_source = "missing"
-    if filters_map is None:
-        filters_source = "missing"
-
-    filter_step_size, filter_min_qty, filter_min_notional = _extract_filter_values(filters_map)
+    market_snapshot = preflight_market_data(symbol)
+    price_snap = market_snapshot.get("price") or {}
+    filters_snap = market_snapshot.get("filters") or {}
+    price_val = price_snap.get("value")
+    price_source = price_snap.get("source") or "missing"
+    price_reason = price_snap.get("reason")
+    filters_map = filters_snap.get("raw")
+    filters_source = filters_snap.get("source") or "missing"
+    filters_reason = filters_snap.get("reason")
+    filter_step_size = filters_snap.get("step_size") or 0.0
+    filter_min_qty = filters_snap.get("min_qty") or 0.0
+    filter_min_notional = filters_snap.get("min_notional") or 0.0
     if price_val is None or filters_map is None:
         blockers.append("stale_or_missing_exchange_data")
 

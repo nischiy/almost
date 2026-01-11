@@ -33,11 +33,14 @@ import time
 import uuid
 import logging
 import importlib
-from typing import Dict, Any, Callable, Optional, Tuple
+import os
+from typing import Dict, Any, Callable, Optional, Tuple, List
 
 from core.config.env import get_bool
 
 log = logging.getLogger("OrderService")
+_ACCOUNT_CACHE: Dict[str, Any] = {}
+_ACCOUNT_TTL_SEC = 45.0
 
 # ---- Імпорти (чисто, без SourceFileLoader) -------------------------------------
 
@@ -50,6 +53,7 @@ def _import_or_fail(module: str, attr: str) -> Callable[..., Any]:
 
 # Адаптер: будує payload (розмір/ризики всередині)
 build_order = _import_or_fail("app.services.order_adapter", "build_order")
+preflight_market_data = _import_or_fail("app.services.order_adapter", "preflight_market_data")
 # Відправка/системні REST (можуть кидати виключення)
 place_order_via_rest = _import_or_fail("app.services.notifications", "place_order_via_rest")
 set_leverage_via_rest = _import_or_fail("app.services.notifications", "set_leverage_via_rest")
@@ -119,25 +123,110 @@ def _retry_call(fn: Callable[..., Any],
     assert last_exc is not None
     raise last_exc
 
-def _fetch_equity_usd() -> Tuple[Optional[float], Optional[str]]:
+def _fetch_equity_usd() -> Tuple[Optional[float], Optional[float], Optional[str]]:
     """
-    Best-effort equity lookup (live only). Returns (equity_usd, reason).
+    Best-effort equity lookup (live only). Returns (equity_usd, wallet_usdt, reason).
     """
     try:
         from core.exchange_private import fetch_futures_private
     except Exception as e:
-        return None, f"import_error:{e}"
+        return None, None, f"import_error:{e}"
     data = fetch_futures_private()
     if not isinstance(data, dict):
-        return None, "invalid_response"
+        return None, None, "invalid_response"
     balances = data.get("balances") or {}
     for key in ("USDT", "BUSD", "USDC"):
         if key in balances:
             try:
-                return float(balances[key]), "futures_balance"
+                value = float(balances[key])
+                return value, value, "futures_balance"
             except Exception:
-                return None, "parse_error"
-    return None, data.get("error") or "no_balance"
+                return None, None, "parse_error"
+    return None, None, data.get("error") or "no_balance"
+
+def _allow_offline_fallback() -> bool:
+    env = str(os.getenv("ENV", "production") or "production").lower()
+    if env != "production":
+        return True
+    return "PYTEST_CURRENT_TEST" in os.environ
+
+def _get_account_snapshot(wallet_usdt: Optional[float] = None) -> Dict[str, Any]:
+    now = time.time()
+    if "PYTEST_CURRENT_TEST" not in os.environ:
+        cached = _ACCOUNT_CACHE.get("snapshot")
+        if cached and now - float(cached.get("ts") or 0.0) <= _ACCOUNT_TTL_SEC:
+            snap = dict(cached)
+            snap["source"] = "cache"
+            snap["origin"] = cached.get("source")
+            return snap
+    equity_usd, wallet_val, reason = _fetch_equity_usd()
+    fallback_wallet = wallet_usdt
+    if fallback_wallet is None and _allow_offline_fallback():
+        try:
+            fallback_wallet = float(str(os.getenv("WALLET_USDT", "1000")).strip())
+        except Exception:
+            fallback_wallet = None
+    source = "exchange" if equity_usd is not None else "missing"
+    if equity_usd is None and fallback_wallet is not None and _allow_offline_fallback():
+        equity_usd = float(fallback_wallet)
+        wallet_val = float(fallback_wallet)
+        source = "fallback"
+        if reason:
+            reason = f"{reason};fallback_wallet_usdt"
+        else:
+            reason = "fallback_wallet_usdt"
+    snap = {
+        "equity_usd": equity_usd,
+        "wallet_usdt": wallet_val,
+        "source": source,
+        "reason": reason,
+        "ts": now,
+    }
+    if "PYTEST_CURRENT_TEST" not in os.environ:
+        _ACCOUNT_CACHE["snapshot"] = dict(snap)
+    return snap
+
+def validate_preflight(snapshot: Dict[str, Any]) -> List[str]:
+    rejects: List[str] = []
+    account = snapshot.get("account") or {}
+    price = snapshot.get("price") or {}
+    filters = snapshot.get("filters") or {}
+    equity_val = account.get("equity_usd")
+    wallet_val = account.get("wallet_usdt")
+    if equity_val is None or float(equity_val or 0.0) <= 0:
+        detail = account.get("reason") or account.get("source")
+        rejects.append(f"missing_account_equity:{detail}" if detail else "missing_account_equity")
+    if wallet_val is None or float(wallet_val or 0.0) <= 0:
+        detail = account.get("reason") or account.get("source")
+        rejects.append(f"missing_wallet_usdt:{detail}" if detail else "missing_wallet_usdt")
+    price_val = price.get("value")
+    if price_val is None or float(price_val or 0.0) <= 0:
+        detail = price.get("reason") or price.get("source")
+        rejects.append(f"missing_price:{detail}" if detail else "missing_price")
+    step_size = filters.get("step_size")
+    min_qty = filters.get("min_qty")
+    min_notional = filters.get("min_notional")
+    if step_size is None or float(step_size or 0.0) <= 0:
+        detail = filters.get("reason") or filters.get("source")
+        rejects.append(f"missing_filter_step_size:{detail}" if detail else "missing_filter_step_size")
+    if min_qty is None or float(min_qty or 0.0) <= 0:
+        detail = filters.get("reason") or filters.get("source")
+        rejects.append(f"missing_filter_min_qty:{detail}" if detail else "missing_filter_min_qty")
+    if min_notional is None or float(min_notional or 0.0) < 0:
+        detail = filters.get("reason") or filters.get("source")
+        rejects.append(f"missing_filter_min_notional:{detail}" if detail else "missing_filter_min_notional")
+    return rejects
+
+def preflight_read(symbol: str, wallet_usdt: Optional[float] = None) -> Dict[str, Any]:
+    account = _get_account_snapshot(wallet_usdt)
+    market = preflight_market_data(symbol)
+    snapshot = {
+        "account": account,
+        "price": market.get("price") or {},
+        "filters": market.get("filters") or {},
+    }
+    snapshot["rejects"] = validate_preflight(snapshot)
+    return snapshot
 
 
 # ---- Головна функція сервісу ---------------------------------------------------
@@ -151,15 +240,16 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
     if not isinstance(rg_state, dict):
         rg_state = {}
     if not rg_state.get("equity_usd"):
-        equity_usd, eq_reason = _fetch_equity_usd()
+        account = _get_account_snapshot(wallet_usdt)
+        equity_usd = account.get("equity_usd")
         if equity_usd is not None:
             rg_state["equity_usd"] = equity_usd
-            rg_state.setdefault("equity_source", "exchange")
+            rg_state.setdefault("equity_source", account.get("source") or "exchange")
         else:
             rg_state["equity_usd"] = None
-            rg_state.setdefault("equity_source", "missing")
-        if eq_reason:
-            rg_state.setdefault("equity_reason", eq_reason)
+            rg_state.setdefault("equity_source", account.get("source") or "missing")
+        if account.get("reason"):
+            rg_state.setdefault("equity_reason", account.get("reason"))
 
     # 1) Побудова ордера (ризики/сайзер/payload)
     built: Dict[str, Any] = build_order(symbol, side, otype, wallet_usdt, **{**kwargs, "rg_state": rg_state})

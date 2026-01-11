@@ -49,6 +49,9 @@ class TraderApp:
         self.tel = None  # optional snapshot/decision/health
 
     def run_once(self) -> None:
+        wallet_usdt = _get_wallet_usdt()
+        preflight = _read_preflight(self.symbol, wallet_usdt)
+        preflight_rejects = list(preflight.get("rejects") or [])
         df = None
         if getattr(self, "md", None) and hasattr(self.md, "get_klines"):
             try:
@@ -79,7 +82,7 @@ class TraderApp:
 
         if not isinstance(decision, dict):
             self.log.info("run_once: no decision; symbol=%s interval=%s", self.symbol, self.interval)
-            return
+            decision = {"side": "HOLD", "action": "HOLD", "reason": "signal_empty"}
 
         decision = normalize_decision(decision, fallback_reason="signal_empty")
         strategy_name = decision.get("strategy") or get_env("STRATEGY_NAME", "ema_rsi_atr")
@@ -91,59 +94,97 @@ class TraderApp:
             except Exception:
                 pass
 
-        # risk-gate
-        ok, reason = True, ""
-        if getattr(self, "risk", None) and hasattr(self.risk, "can_open"):
-            try:
-                ok, reason = self.risk.can_open(decision)
-            except Exception as e:
-                self.log.exception("risk.can_open failed: %s", e)
-                ok, reason = False, "risk_error"
+        execution_info: Dict[str, Any] = {"submitted": False, "reason": "hold_action"}
+        sizing: Optional[Dict[str, Any]] = None
 
-        if not ok:
-            self.log.info("run_once: blocked by risk (%s)", reason)
-            _log_decision_details(self.log, decision, strategy_name, sizing=None, execution={"submitted": False, "reason": "risk_reject", "detail": reason})
-            if normalize_side(decision.get("side") or decision.get("action")) in {"HOLD", "UNKNOWN"}:
-                self.log.info("run_once: HOLD — nothing to execute")
-            if getattr(self, "tel", None) and hasattr(self.tel, "health"):
-                try:
-                    self.tel.health(ok=False, msg=reason)
-                except Exception:
-                    pass
-            return
-
-        # execution
-        if getattr(self, "exe", None) and hasattr(self.exe, "place"):
-            try:
-                side = normalize_side(decision.get("side") or decision.get("action"))
-                if side in {"HOLD", "UNKNOWN"}:
-                    self.log.info("run_once: HOLD — nothing to execute")
-                    _log_decision_details(self.log, decision, strategy_name, sizing=None, execution={"submitted": False, "reason": "hold_action"})
-                    return
-                res = _call_execution(self.exe.place, decision, symbol=self.symbol)
-                if isinstance(res, dict):
-                    self.log.info("execution: submitted=%s reason=%s", res.get("submitted"), res.get("reason"))
-                    preview = res.get("preview") or {}
-                    sizer = preview.get("sizer") or {}
-                    sizing = {
-                        "size_usd": sizer.get("size_usd"),
-                        "qty_raw": sizer.get("qty_raw"),
-                        "qty_final": sizer.get("qty_final"),
-                        "step_size": sizer.get("lot_step"),
-                        "min_qty": sizer.get("min_qty"),
-                        "min_notional": sizer.get("min_notional"),
-                    }
-                    if sizer.get("size_usd") is not None:
-                        decision["size_usd"] = sizer.get("size_usd")
-                    if sizer.get("qty_final") is not None:
-                        decision["qty"] = sizer.get("qty_final")
-                    _log_decision_details(self.log, decision, strategy_name, sizing=sizing, execution={"submitted": res.get("submitted"), "reason": res.get("reason"), "blockers": preview.get("blockers")})
-                else:
-                    self.log.info("execution: done (non-dict response)")
-            except Exception as e:
-                self.log.exception("execution failed: %s", e)
+        if preflight_rejects:
+            decision["action"] = "HOLD"
+            decision["side"] = "HOLD"
+            decision["reason"] = "missing_exchange_data"
+            decision["reasons"] = preflight_rejects
+            execution_info = {"submitted": False, "reason": "missing_exchange_data", "blockers": preflight_rejects}
         else:
-            self.log.info("run_once: no execution service wired; decision=%s", decision)
+            # risk-gate
+            ok, reason = True, ""
+            if getattr(self, "risk", None) and hasattr(self.risk, "can_open"):
+                try:
+                    ok, reason = self.risk.can_open(decision)
+                except Exception as e:
+                    self.log.exception("risk.can_open failed: %s", e)
+                    ok, reason = False, "risk_error"
+
+            if not ok:
+                self.log.info("run_once: blocked by risk (%s)", reason)
+                execution_info = {"submitted": False, "reason": "risk_reject", "detail": reason}
+                _log_decision_details(
+                    self.log,
+                    decision,
+                    strategy_name,
+                    sizing=None,
+                    execution=execution_info,
+                )
+                if normalize_side(decision.get("side") or decision.get("action")) in {"HOLD", "UNKNOWN"}:
+                    self.log.info("run_once: HOLD — nothing to execute")
+                if getattr(self, "tel", None) and hasattr(self.tel, "health"):
+                    try:
+                        self.tel.health(ok=False, msg=reason)
+                    except Exception:
+                        pass
+            else:
+                # execution
+                if getattr(self, "exe", None) and hasattr(self.exe, "place"):
+                    try:
+                        side = normalize_side(decision.get("side") or decision.get("action"))
+                        if side in {"HOLD", "UNKNOWN"}:
+                            self.log.info("run_once: HOLD — nothing to execute")
+                            execution_info = {"submitted": False, "reason": "hold_action"}
+                            _log_decision_details(
+                                self.log,
+                                decision,
+                                strategy_name,
+                                sizing=None,
+                                execution=execution_info,
+                            )
+                        else:
+                            res = _call_execution(self.exe.place, decision, symbol=self.symbol)
+                            if isinstance(res, dict):
+                                self.log.info("execution: submitted=%s reason=%s", res.get("submitted"), res.get("reason"))
+                                preview = res.get("preview") or {}
+                                sizer = preview.get("sizer") or {}
+                                sizing = {
+                                    "size_usd": sizer.get("size_usd"),
+                                    "qty_raw": sizer.get("qty_raw"),
+                                    "qty_final": sizer.get("qty_final"),
+                                    "step_size": sizer.get("lot_step"),
+                                    "min_qty": sizer.get("min_qty"),
+                                    "min_notional": sizer.get("min_notional"),
+                                }
+                                if sizer.get("size_usd") is not None:
+                                    decision["size_usd"] = sizer.get("size_usd")
+                                if sizer.get("qty_final") is not None:
+                                    decision["qty"] = sizer.get("qty_final")
+                                execution_info = {
+                                    "submitted": res.get("submitted"),
+                                    "reason": res.get("reason"),
+                                    "blockers": preview.get("blockers"),
+                                }
+                                _log_decision_details(
+                                    self.log,
+                                    decision,
+                                    strategy_name,
+                                    sizing=sizing,
+                                    execution=execution_info,
+                                )
+                            else:
+                                self.log.info("execution: done (non-dict response)")
+                    except Exception as e:
+                        self.log.exception("execution failed: %s", e)
+                        execution_info = {"submitted": False, "reason": "execution_error", "detail": str(e)}
+                else:
+                    self.log.info("run_once: no execution service wired; decision=%s", decision)
+                    execution_info = {"submitted": False, "reason": "no_execution_service"}
+
+        _log_tick_summary(self.log, decision, strategy_name, preflight, execution_info)
 
     def start(self, oneshot: Optional[bool]=None) -> None:
         if oneshot is None:
@@ -311,6 +352,63 @@ def _build_execution_payload(decision: Dict[str, Any], symbol: str) -> Dict[str,
     drop = {"side", "action", "type", "otype", "wallet_usdt", "symbol"}
     extra = {k: v for k, v in decision.items() if k not in drop}
     return {"symbol": symbol, "side": side, "otype": otype, "wallet_usdt": wallet_usdt, **extra}
+
+def _get_wallet_usdt() -> Optional[float]:
+    raw = os.getenv("WALLET_USDT")
+    if raw is None:
+        return None
+    try:
+        return float(str(raw).strip())
+    except Exception:
+        return None
+
+def _read_preflight(symbol: str, wallet_usdt: Optional[float]) -> Dict[str, Any]:
+    ts = time.time()
+    try:
+        from app.services import order_service
+        return order_service.preflight_read(symbol, wallet_usdt)
+    except Exception as e:
+        reason = f"preflight_error:{e}"
+        return {
+            "account": {"equity_usd": None, "wallet_usdt": None, "source": "missing", "reason": reason, "ts": ts},
+            "filters": {"step_size": None, "min_qty": None, "min_notional": None, "source": "missing", "reason": reason, "ts": ts},
+            "price": {"value": None, "source": "missing", "reason": reason, "ts": ts},
+            "rejects": [reason],
+        }
+
+def _log_tick_summary(logger: logging.Logger, decision: Dict[str, Any], strategy: str,
+                      preflight: Dict[str, Any], execution: Dict[str, Any]) -> None:
+    account = preflight.get("account") or {}
+    filters = preflight.get("filters") or {}
+    price = preflight.get("price") or {}
+    reasons = decision.get("reasons")
+    if not reasons:
+        reasons = [decision.get("reason")] if decision.get("reason") else []
+    payload = {
+        "strategy": strategy,
+        "action": decision.get("action") or decision.get("side"),
+        "reasons": reasons,
+        "account": {
+            "equity_usd": account.get("equity_usd"),
+            "wallet_usdt": account.get("wallet_usdt"),
+            "source": account.get("source"),
+            "ts": account.get("ts"),
+        },
+        "filters": {
+            "step_size": filters.get("step_size"),
+            "min_qty": filters.get("min_qty"),
+            "min_notional": filters.get("min_notional"),
+            "source": filters.get("source"),
+            "ts": filters.get("ts"),
+        },
+        "price": {
+            "last": price.get("value"),
+            "source": price.get("source"),
+            "ts": price.get("ts"),
+        },
+        "execution": execution,
+    }
+    logger.info("tick_summary: %s", payload)
 
 def _log_decision_details(logger: logging.Logger, decision: Dict[str, Any], strategy: str,
                           *, sizing: Optional[Dict[str, Any]], execution: Optional[Dict[str, Any]]) -> None:
