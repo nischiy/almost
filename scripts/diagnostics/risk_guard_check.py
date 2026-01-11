@@ -3,6 +3,7 @@ from __future__ import annotations
 import os, sys, json
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
+import importlib.util
 
 _THIS = Path(__file__).resolve()
 _PROJ_ROOT = _THIS.parents[2]
@@ -15,9 +16,9 @@ if str(_PROJ_ROOT) not in sys.path:
 if str(_UTILS_DIR) not in sys.path:
     sys.path.insert(0, str(_UTILS_DIR))
 
-try:
-from core.risk_guard import RiskLimits, RiskState, can_trade  # normal import
-except Exception:
+if importlib.util.find_spec("core.risk_guard"):
+    from core.risk_guard import RiskLimits, RiskState, can_trade  # normal import
+else:
     # fallback: load by path
     mod = SourceFileLoader("risk_guard", str(_RG_PATH)).load_module()
     RiskLimits = mod.RiskLimits
@@ -45,4 +46,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

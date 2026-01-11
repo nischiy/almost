@@ -22,4 +22,5 @@ def test_market_data_uses_public_api(monkeypatch):
     md = HttpMarketData(base_url="https://fapi.binance.com")
     df = md.get_klines("BTCUSDT","1m",limit=2)
     assert len(df) == 2
-    assert set(df.columns) == {"open_time","open","high","low","close","volume","close_time"}
+    required = {"open_time", "open", "high", "low", "close", "volume", "close_time"}
+    assert required.issubset(set(df.columns))

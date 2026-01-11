@@ -10,6 +10,7 @@ from __future__ import annotations
 import os, sys, time, json
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
+import importlib.util
 
 _THIS = Path(__file__).resolve()
 _PROJ_ROOT = _THIS.parents[2]
@@ -21,9 +22,9 @@ if str(_PROJ_ROOT) not in sys.path:
 if str(_UTILS_DIR) not in sys.path:
     sys.path.insert(0, str(_UTILS_DIR))
 
-try:
-from app.services.order_service import place
-except Exception:
+if importlib.util.find_spec("app.services.order_service"):
+    from app.services.order_service import place
+else:
     mod = SourceFileLoader("order_service", str(_SERVICE_PATH)).load_module()
     place = mod.place
 
@@ -52,4 +53,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

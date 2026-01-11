@@ -5,7 +5,8 @@ from app.services.signal import SignalService
 def make_df(n=100, base=100.0):
     import numpy as np
     idx = pd.date_range("2025-01-01", periods=n, freq="1min", tz="UTC")
-    close = base + np.cumsum(np.random.randn(n)*0.1)
+    rng = np.random.default_rng(42)
+    close = base + np.cumsum(rng.normal(0.0, 0.1, size=n))
     high = close + 0.2
     low = close - 0.2
     return pd.DataFrame({"open_time": idx, "open": close, "high": high, "low": low, "close": close, "volume": 1.0, "close_time": idx})

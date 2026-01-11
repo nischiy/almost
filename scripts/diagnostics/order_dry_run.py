@@ -4,6 +4,7 @@ from __future__ import annotations
 import os, sys, json, time
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
+import importlib.util
 
 _THIS = Path(__file__).resolve()
 _PROJ_ROOT = _THIS.parents[2]
@@ -12,16 +13,16 @@ _UTILS_DIR = _PROJ_ROOT / "utils"
 def _load(name: str, path: Path):
     return SourceFileLoader(name, str(path)).load_module()
 
-try:
-from core.positions.position_sizer import SizerConfig, compute_qty_leverage
-except Exception:
+if importlib.util.find_spec("core.positions.position_sizer"):
+    from core.positions.position_sizer import SizerConfig, compute_qty_leverage
+else:
     mod = _load("position_sizer", _UTILS_DIR / "position_sizer.py")
     SizerConfig = mod.SizerConfig
     compute_qty_leverage = mod.compute_qty_leverage
 
-try:
-from core.risk_guard import RiskLimits, RiskState, can_trade
-except Exception:
+if importlib.util.find_spec("core.risk_guard"):
+    from core.risk_guard import RiskLimits, RiskState, can_trade
+else:
     mod = _load("risk_guard", _UTILS_DIR / "risk_guard.py")
     RiskLimits = mod.RiskLimits
     RiskState = mod.RiskState
@@ -110,5 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 

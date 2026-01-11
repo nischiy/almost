@@ -4,6 +4,7 @@ from __future__ import annotations
 import os, sys, json
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
+import importlib.util
 
 _THIS = Path(__file__).resolve()
 _PROJ_ROOT = _THIS.parents[2]
@@ -15,9 +16,9 @@ if str(_PROJ_ROOT) not in sys.path:
 if str(_UTILS_DIR) not in sys.path:
     sys.path.insert(0, str(_UTILS_DIR))
 
-try:
-from app.services.exit_adapter import preview_exits, send_exits
-except Exception:
+if importlib.util.find_spec("app.services.exit_adapter"):
+    from app.services.exit_adapter import preview_exits, send_exits
+else:
     mod = SourceFileLoader("exit_adapter", str(_EXIT_PATH)).load_module()
     preview_exits = mod.preview_exits
     send_exits = mod.send_exits
@@ -49,4 +50,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

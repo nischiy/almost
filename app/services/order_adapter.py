@@ -47,6 +47,7 @@ from dataclasses import asdict
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
 from typing import Dict, Any, Tuple
+import importlib.util
 
 # robust local imports (fallback loader)
 _APP_DIR = Path(__file__).resolve().parent
@@ -55,17 +56,17 @@ def _load(name: str, path: Path):
     return SourceFileLoader(name, str(path)).load_module()
 
 # --- position sizer (як було) ---
-try:
+if importlib.util.find_spec("core.positions.position_sizer"):
     from core.positions.position_sizer import SizerConfig, compute_qty_leverage
-except Exception:
+else:
     mod = _load("position_sizer", _ROOT/"utils"/"position_sizer.py")
     SizerConfig = getattr(mod, "SizerConfig")
     compute_qty_leverage = getattr(mod, "compute_qty_leverage")
 
 # --- risk evaluate (стабільний API) ---
-try:
+if importlib.util.find_spec("core.risk_guard"):
     from core.risk_guard import evaluate
-except Exception:
+else:
     mod = _load("risk_guard_core", _ROOT.parent/"core"/"risk_guard.py")
     evaluate = getattr(mod, "evaluate")
 
@@ -191,9 +192,18 @@ def _apply_atr_budget(
     }
 
 def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) -> dict:
-    side = (side or "BUY").upper()
+    raw_side = (side or "BUY").upper()
+    if raw_side in ("BUY", "LONG"):
+        side = "BUY"
+    elif raw_side in ("SELL", "SHORT"):
+        side = "SELL"
+    else:
+        side = raw_side
     otype = (otype or "MARKET").upper()
     errors = []
+    side_ok = side in ("BUY", "SELL")
+    if not side_ok:
+        errors.append(f"invalid side: {raw_side}")
 
     # --- базовий сайзинг ---
     cfg = SizerConfig(
@@ -270,7 +280,7 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
         and float(getattr(sized, "qty", 0.0)) * float(getattr(sized, "price", 0.0) or 0.0) >= float(getattr(sized, "min_notional", 0.0) or 0.0)
     )
 
-    if ok and qty_ok and (otype != "LIMIT" or price is not None):
+    if ok and side_ok and qty_ok and (otype != "LIMIT" or price is not None):
         payload = {
             "symbol": symbol,
             "side": side,

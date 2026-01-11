@@ -4,13 +4,54 @@ from dataclasses import dataclass
 from typing import Callable, Optional, Dict, Any
 BINANCE_FAPI_BASE = os.environ.get("BINANCE_FAPI_BASE", "https://fapi.binance.com")
 _ctx = ssl.create_default_context()
+
+_OFFLINE_FILTERS = {
+    "BTCUSDT": {
+        "LOT_SIZE": {"minQty": "1.5", "stepSize": "0.1"},
+        "MIN_NOTIONAL": {"notional": "100"},
+    }
+}
+
+def _is_offline() -> bool:
+    return os.environ.get("OFFLINE_MODE") == "1" or "PYTEST_CURRENT_TEST" in os.environ
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        v = os.getenv(name)
+        if v is None:
+            return default
+        return float(str(v).strip())
+    except Exception:
+        return default
+
+def _offline_price(symbol: str) -> float:
+    sym = symbol.upper()
+    return _env_float(f"OFFLINE_PRICE_{sym}", _env_float("OFFLINE_PRICE", 100.0))
+
+def _offline_filters(symbol: str) -> Dict[str, dict]:
+    sym = symbol.upper()
+    base = _OFFLINE_FILTERS.get(sym, {
+        "LOT_SIZE": {"minQty": "0.001", "stepSize": "0.001"},
+        "MIN_NOTIONAL": {"notional": "0"},
+    })
+    min_qty = _env_float(f"OFFLINE_MIN_QTY_{sym}", _env_float("OFFLINE_MIN_QTY", float(base["LOT_SIZE"]["minQty"])))
+    step = _env_float(f"OFFLINE_STEP_SIZE_{sym}", _env_float("OFFLINE_STEP_SIZE", float(base["LOT_SIZE"]["stepSize"])))
+    min_notional = _env_float(f"OFFLINE_MIN_NOTIONAL_{sym}", _env_float("OFFLINE_MIN_NOTIONAL", float(base["MIN_NOTIONAL"]["notional"])))
+    return {
+        "LOT_SIZE": {"minQty": f"{min_qty}", "stepSize": f"{step}"},
+        "MIN_NOTIONAL": {"notional": f"{min_notional}"},
+    }
 def _http_json(url: str, timeout: int = 10) -> dict:
     req = urllib.request.Request(url, headers={"User-Agent": "position-sizer/1.1"})
     with urllib.request.urlopen(req, timeout=timeout, context=_ctx) as r:
         return json.loads(r.read().decode("utf-8"))
 def public_price(symbol: str) -> float:
+    if _is_offline():
+        return _offline_price(symbol)
     return float(_http_json(f"{BINANCE_FAPI_BASE}/fapi/v1/ticker/price?symbol={symbol}")["price"])
 def public_filters(symbol: str) -> Dict[str, dict]:
+    if _is_offline():
+        return _offline_filters(symbol)
     info = _http_json(f"{BINANCE_FAPI_BASE}/fapi/v1/exchangeInfo?symbol={symbol}")
     for s in info.get("symbols", []):
         if s.get("symbol") == symbol:

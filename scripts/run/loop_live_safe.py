@@ -14,6 +14,7 @@ from __future__ import annotations
 import os, sys, time, json
 from pathlib import Path
 from importlib.machinery import SourceFileLoader
+import importlib.util
 
 _THIS = Path(__file__).resolve()
 _PROJ_ROOT = _THIS.parents[2]
@@ -30,14 +31,14 @@ def _envf(name: str, default=None, cast=float):
     try: return cast(v)
     except Exception: return default
 
-try:
-from app.services.order_service import place
-except Exception:
+if importlib.util.find_spec("app.services.order_service"):
+    from app.services.order_service import place
+else:
     place = SourceFileLoader("order_service", str(_SERVICE_PATH)).load_module().place
 
-try:
-from app.services.exit_adapter import send_exits
-except Exception:
+if importlib.util.find_spec("app.services.exit_adapter"):
+    from app.services.exit_adapter import send_exits
+else:
     send_exits = SourceFileLoader("exit_adapter", str(_EXIT_PATH)).load_module().send_exits
 
 def main():
@@ -72,5 +73,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 

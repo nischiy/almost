@@ -27,9 +27,9 @@ import logging
 import time
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any, Tuple
-from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.request import urlopen, Request
+
+import requests
 
 import pandas as pd
 
@@ -68,6 +68,17 @@ def _endpoints_for_base(base_url: str) -> _Endpoints:
 
 # ---- HTTP утиліти з ретраями ----
 
+def _http_get(url: str, params: Dict[str, Any], *, headers: Optional[Dict[str, str]] = None, timeout: int = 15) -> str:
+    query = urlencode({k: v for k, v in params.items() if v is not None})
+    full_url = f"{url}?{query}" if query else url
+    resp = requests.get(full_url, timeout=timeout)
+    resp.raise_for_status()
+    if hasattr(resp, "text"):
+        return resp.text
+    if hasattr(resp, "json"):
+        return json.dumps(resp.json())
+    return str(resp)
+
 def _http_get_json(url: str, params: Dict[str, Any], *, timeout: int, max_retries: int, log: logging.Logger) -> Tuple[Any, Dict[str, str]]:
     """
     Виконує GET із ретраями (експоненційний backoff).
@@ -80,18 +91,15 @@ def _http_get_json(url: str, params: Dict[str, Any], *, timeout: int, max_retrie
     delay = 0.5
     for attempt in range(max_retries + 1):
         try:
-            req = Request(full_url, headers=headers)
-            with urlopen(req, timeout=timeout) as resp:
-                raw = resp.read().decode("utf-8")
-                hdrs = {k.lower(): v for k, v in resp.headers.items()}
-                return json.loads(raw), hdrs
-        except HTTPError as e:
+            raw = _http_get(url, params, headers=headers, timeout=timeout)
+            return json.loads(raw), {}
+        except requests.HTTPError as e:
             # Обробка 429/5xx з паузами
-            status = e.code
+            status = e.response.status_code if e.response is not None else 0
             retry_after = 0.0
             try:
-                if e.headers:
-                    ra = e.headers.get("Retry-After")
+                if e.response is not None:
+                    ra = e.response.headers.get("Retry-After")
                     if ra:
                         retry_after = float(ra)
             except Exception:
@@ -106,12 +114,12 @@ def _http_get_json(url: str, params: Dict[str, Any], *, timeout: int, max_retrie
 
             # Безпечна спроба прочитати тіло для діагностики
             try:
-                raw = e.read().decode("utf-8", errors="ignore")
+                raw = e.response.text if e.response is not None else ""
             except Exception:
                 raw = ""
             log.error("HTTP error %s on %s: %s", status, full_url, raw.strip()[:300])
             raise
-        except URLError as e:
+        except requests.RequestException as e:
             if attempt < max_retries:
                 log.warning("Network error on %s: %s, retry in %.2fs (attempt %d/%d)", full_url, e, delay, attempt + 1, max_retries)
                 time.sleep(delay)
