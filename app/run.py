@@ -433,12 +433,14 @@ def _log_tick_summary(logger: logging.Logger, decision: Dict[str, Any], strategy
 
 def _log_decision_details(logger: logging.Logger, decision: Dict[str, Any], strategy: str,
                           *, sizing: Optional[Dict[str, Any]], execution: Optional[Dict[str, Any]]) -> None:
-    indicators = {
-        "ema_fast": decision.get("ema_fast"),
-        "ema_slow": decision.get("ema_slow"),
-        "rsi": decision.get("rsi"),
-        "atr": decision.get("atr"),
-    }
+    indicators = decision.get("indicators")
+    if not indicators:
+        indicators = {
+            "ema_fast": decision.get("ema_fast"),
+            "ema_slow": decision.get("ema_slow"),
+            "rsi": decision.get("rsi"),
+            "atr": decision.get("atr"),
+        }
     price = decision.get("price")
     sl = decision.get("sl")
     tp = decision.get("tp")

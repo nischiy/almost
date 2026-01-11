@@ -134,16 +134,21 @@ class SignalService:
             defaults = {}
         merged = _merge_params(defaults, params)
 
-        # 3) виклик стратегії (з фолбеком, якщо назва невідома)
+        # 3) виклик стратегії (невідома назва -> HOLD)
         try:
             fn = _select_strategy(name)
         except KeyError:
-            if name != "ema_rsi_atr":
-                self.log.info("Strategy '%s' not found, falling back to 'ema_rsi_atr'", name)
-                name = "ema_rsi_atr"
-                fn = _select_strategy(name)
-            else:
-                raise
+            self.log.warning("Strategy '%s' not found; returning HOLD", name)
+            return {
+                "side": "HOLD",
+                "action": "HOLD",
+                "reason": "unknown_strategy",
+                "reasons": [f"strategy={name}"],
+                "sl": None,
+                "tp": None,
+                "size_usd": float(os.getenv("ORDER_QTY_USD", "0") or 0.0),
+                "strategy": name,
+            }
 
         try:
             raw = fn(df, merged)  # очікується dict

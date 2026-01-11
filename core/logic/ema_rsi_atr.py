@@ -57,9 +57,9 @@ def generate_signal(df: pd.DataFrame, params: Dict[str, Any]) -> Dict[str, Any]:
         reasons.append("rsi_in_range")
 
     if e_fast.iloc[-1] > e_slow.iloc[-1] and rsi.iloc[-1] > rsi_hi:
-        side = "LONG"
+        side = "BUY"
     elif e_fast.iloc[-1] < e_slow.iloc[-1] and rsi.iloc[-1] < rsi_lo:
-        side = "SHORT"
+        side = "SELL"
     else:
         side = "HOLD"
 
@@ -68,19 +68,26 @@ def generate_signal(df: pd.DataFrame, params: Dict[str, Any]) -> Dict[str, Any]:
 
     decision = {
         "action": side,
+        "side": side,
         "price": price,
         "qty": qty,
         "ema_fast": float(e_fast.iloc[-1]),
         "ema_slow": float(e_slow.iloc[-1]),
         "rsi": float(rsi.iloc[-1]),
         "atr": float(atr.iloc[-1]) if not atr.empty else None,
+        "indicators": {
+            "ema_fast": float(e_fast.iloc[-1]),
+            "ema_slow": float(e_slow.iloc[-1]),
+            "rsi": float(rsi.iloc[-1]),
+            "atr": float(atr.iloc[-1]) if not atr.empty else None,
+        },
         "reasons": reasons,
         "reason": "; ".join(reasons),
     }
 
     last_atr = decision["atr"]
-    if last_atr and side in ("LONG", "SHORT"):
-        if side == "LONG":
+    if last_atr and side in ("BUY", "SELL"):
+        if side == "BUY":
             decision["sl"] = price - sl_k * last_atr
             decision["tp"] = price + tp_k * last_atr
         else:
