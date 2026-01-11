@@ -82,7 +82,7 @@ class TraderApp:
             return
 
         decision = normalize_decision(decision, fallback_reason="signal_empty")
-        self.log.info("run_once: decision=%s", decision)
+        strategy_name = decision.get("strategy") or get_env("STRATEGY_NAME", "ema_rsi_atr")
 
         # телеметрія рішення
         if getattr(self, "tel", None) and hasattr(self.tel, "decision"):
@@ -102,6 +102,7 @@ class TraderApp:
 
         if not ok:
             self.log.info("run_once: blocked by risk (%s)", reason)
+            _log_decision_details(self.log, decision, strategy_name, sizing=None, execution={"submitted": False, "reason": "risk_reject", "detail": reason})
             if normalize_side(decision.get("side") or decision.get("action")) in {"HOLD", "UNKNOWN"}:
                 self.log.info("run_once: HOLD — nothing to execute")
             if getattr(self, "tel", None) and hasattr(self.tel, "health"):
@@ -117,10 +118,26 @@ class TraderApp:
                 side = normalize_side(decision.get("side") or decision.get("action"))
                 if side in {"HOLD", "UNKNOWN"}:
                     self.log.info("run_once: HOLD — nothing to execute")
+                    _log_decision_details(self.log, decision, strategy_name, sizing=None, execution={"submitted": False, "reason": "hold_action"})
                     return
                 res = _call_execution(self.exe.place, decision, symbol=self.symbol)
                 if isinstance(res, dict):
                     self.log.info("execution: submitted=%s reason=%s", res.get("submitted"), res.get("reason"))
+                    preview = res.get("preview") or {}
+                    sizer = preview.get("sizer") or {}
+                    sizing = {
+                        "size_usd": sizer.get("size_usd"),
+                        "qty_raw": sizer.get("qty_raw"),
+                        "qty_final": sizer.get("qty_final"),
+                        "step_size": sizer.get("lot_step"),
+                        "min_qty": sizer.get("min_qty"),
+                        "min_notional": sizer.get("min_notional"),
+                    }
+                    if sizer.get("size_usd") is not None:
+                        decision["size_usd"] = sizer.get("size_usd")
+                    if sizer.get("qty_final") is not None:
+                        decision["qty"] = sizer.get("qty_final")
+                    _log_decision_details(self.log, decision, strategy_name, sizing=sizing, execution={"submitted": res.get("submitted"), "reason": res.get("reason"), "blockers": preview.get("blockers")})
                 else:
                     self.log.info("execution: done (non-dict response)")
             except Exception as e:
@@ -294,6 +311,39 @@ def _build_execution_payload(decision: Dict[str, Any], symbol: str) -> Dict[str,
     drop = {"side", "action", "type", "otype", "wallet_usdt", "symbol"}
     extra = {k: v for k, v in decision.items() if k not in drop}
     return {"symbol": symbol, "side": side, "otype": otype, "wallet_usdt": wallet_usdt, **extra}
+
+def _log_decision_details(logger: logging.Logger, decision: Dict[str, Any], strategy: str,
+                          *, sizing: Optional[Dict[str, Any]], execution: Optional[Dict[str, Any]]) -> None:
+    indicators = {
+        "ema_fast": decision.get("ema_fast"),
+        "ema_slow": decision.get("ema_slow"),
+        "rsi": decision.get("rsi"),
+        "atr": decision.get("atr"),
+    }
+    price = decision.get("price")
+    sl = decision.get("sl")
+    tp = decision.get("tp")
+    rr = None
+    if price and sl and tp:
+        risk = abs(float(price) - float(sl))
+        reward = abs(float(tp) - float(price))
+        rr = (reward / risk) if risk > 0 else None
+    logger.info(
+        "decision: strategy=%s action=%s reason=%s reasons=%s price=%s indicators=%s size_usd=%s qty=%s sl=%s tp=%s rr=%s sizing=%s execution=%s",
+        strategy,
+        decision.get("action") or decision.get("side"),
+        decision.get("reason"),
+        decision.get("reasons"),
+        price,
+        indicators,
+        decision.get("size_usd"),
+        decision.get("qty"),
+        sl,
+        tp,
+        rr,
+        sizing,
+        execution,
+    )
 
 def main() -> None:
     load_dotenv_once()

@@ -7,6 +7,7 @@ import importlib
 def test_order_service_dry_run_builds_payload_with_wallet_equity(monkeypatch) -> None:
     monkeypatch.setenv("DRY_RUN_ONLY", "1")
     monkeypatch.setenv("RISK_MIN_EQUITY_USD", "10")
+    monkeypatch.setenv("ORDER_QTY_USD", "200")
 
     svc = importlib.import_module("app.services.order_service")
     res = svc.place("BTCUSDT", "BUY", "MARKET", 1000.0, rg_state={})

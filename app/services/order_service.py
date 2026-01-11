@@ -33,7 +33,7 @@ import time
 import uuid
 import logging
 import importlib
-from typing import Dict, Any, Callable, Optional
+from typing import Dict, Any, Callable, Optional, Tuple
 
 from core.config.env import get_bool
 
@@ -108,6 +108,26 @@ def _retry_call(fn: Callable[..., Any],
     assert last_exc is not None
     raise last_exc
 
+def _fetch_equity_usd() -> Tuple[Optional[float], Optional[str]]:
+    """
+    Best-effort equity lookup (live only). Returns (equity_usd, reason).
+    """
+    try:
+        from core.exchange_private import fetch_futures_private
+    except Exception as e:
+        return None, f"import_error:{e}"
+    data = fetch_futures_private()
+    if not isinstance(data, dict):
+        return None, "invalid_response"
+    balances = data.get("balances") or {}
+    for key in ("USDT", "BUSD", "USDC"):
+        if key in balances:
+            try:
+                return float(balances[key]), "futures_balance"
+            except Exception:
+                return None, "parse_error"
+    return None, data.get("error") or "no_balance"
+
 
 # ---- Головна функція сервісу ---------------------------------------------------
 
@@ -116,8 +136,18 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
     Побудувати ордер через order_adapter, і (опційно) відправити через REST.
     Повертає структурований результат для логування/діагностики.
     """
+    rg_state = kwargs.get("rg_state") or {}
+    if not isinstance(rg_state, dict):
+        rg_state = {}
+    if not rg_state.get("equity_usd") and not _is_dry_run():
+        equity_usd, eq_reason = _fetch_equity_usd()
+        if equity_usd:
+            rg_state["equity_usd"] = equity_usd
+        if eq_reason:
+            rg_state.setdefault("equity_reason", eq_reason)
+
     # 1) Побудова ордера (ризики/сайзер/payload)
-    built: Dict[str, Any] = build_order(symbol, side, otype, wallet_usdt, **kwargs)
+    built: Dict[str, Any] = build_order(symbol, side, otype, wallet_usdt, **{**kwargs, "rg_state": rg_state})
 
     preview: Dict[str, Any] = {
         "risk_gate": built.get("risk_gate"),
@@ -132,7 +162,7 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
         # Немає чого відправляти (ризик/сайзер/валідація відсіяли)
         blockers = preview.get("blockers") or []
         if blockers:
-            log.warning("order blocked: %s", blockers[0])
+            log.warning("order blocked: %s", blockers)
         return {
             "submitted": False,
             "reason": "no_payload",

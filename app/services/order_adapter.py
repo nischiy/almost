@@ -42,7 +42,7 @@ kwargs (існуючі залишено) + нові для ATR-Budget:
 """
 
 from __future__ import annotations
-import os, time
+import os, time, math
 from dataclasses import asdict
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
@@ -83,6 +83,29 @@ def _fenv(name: str, default: float) -> float:
         return float(s)
     except Exception:
         return float(default)
+
+def _env_optional_float(name: str) -> float | None:
+    v = os.getenv(name)
+    if v is None:
+        return None
+    s = str(v).strip().strip('"').strip("'").replace("_", "").replace(",", "")
+    if not s:
+        return None
+    if s.endswith("%"):
+        s = s[:-1]
+    try:
+        return float(s)
+    except Exception:
+        return None
+
+def _env_optional_int(name: str) -> int | None:
+    v = _env_optional_float(name)
+    if v is None:
+        return None
+    try:
+        return int(v)
+    except Exception:
+        return None
 
 def _clip(x: float, lo: float, hi: float) -> float:
     return max(lo, min(hi, x))
@@ -209,16 +232,36 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
         blockers.append(msg)
 
     # --- базовий сайзинг ---
+    preferred_max_leverage = kw.get("preferred_max_leverage")
+    if preferred_max_leverage is None:
+        preferred_max_leverage = _env_optional_int("PREFERRED_MAX_LEVERAGE")
+    if preferred_max_leverage is None:
+        preferred_max_leverage = _env_optional_int("LEVERAGE")
+    if preferred_max_leverage is None:
+        preferred_max_leverage = 10
+
+    risk_margin_fraction = kw.get("risk_margin_fraction")
+    if risk_margin_fraction is None:
+        risk_margin_fraction = _env_optional_float("RISK_MARGIN_FRACTION")
+    if risk_margin_fraction is None:
+        risk_margin_fraction = 0.2
+
+    desired_pos_usdt = kw.get("desired_pos_usdt")
+    if desired_pos_usdt is None:
+        desired_pos_usdt = kw.get("size_usd")
+    if desired_pos_usdt is None:
+        desired_pos_usdt = kw.get("size")
+
     cfg = SizerConfig(
-        risk_margin_fraction=float(kw.get("risk_margin_fraction", 0.2)),
-        preferred_max_leverage=int(kw.get("preferred_max_leverage", 10)),
-        desired_pos_usdt=(float(kw["desired_pos_usdt"]) if "desired_pos_usdt" in kw and kw["desired_pos_usdt"] is not None else None)
+        risk_margin_fraction=float(risk_margin_fraction),
+        preferred_max_leverage=int(preferred_max_leverage),
+        desired_pos_usdt=(float(desired_pos_usdt) if desired_pos_usdt is not None else None),
     )
     sized = compute_qty_leverage(symbol, float(wallet_usdt), cfg=cfg)
 
     # --- evaluate ризиків через core.risk_guard ---
     st = kw.get("rg_state", {}) or {}
-    equity_raw = st.get("equity_usd")
+    equity_raw = st.get("equity_usd", kw.get("equity_usd"))
     equity_usd = float(equity_raw or 0.0)
     if equity_usd <= 0:
         equity_usd = float(wallet_usdt or 0.0)
@@ -291,6 +334,75 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
             atr_blocked = True
             blockers.append("atr_budget: cap_below_exchange_min")
 
+    # --- USD-based sizing from env/equity (deterministic) ---
+    # Formula:
+    #   risk_usd = equity_usd * (RISK_PER_TRADE_PCT / 100)
+    #   target_usd = min(ORDER_QTY_USD, risk_usd, RISK_MAX_POS_USD) for available values
+    # Qty rounding:
+    #   qty_raw = target_usd / price
+    #   qty_final = floor(qty_raw to lot_step) to satisfy Binance LOT_SIZE
+    env_order_usd = _env_optional_float("ORDER_QTY_USD")
+    risk_pct = _env_optional_float("RISK_PER_TRADE_PCT")
+    max_pos_usd = _env_optional_float("RISK_MAX_POS_USD")
+    sizing_inputs_present = any(
+        v is not None for v in (cfg.desired_pos_usdt, env_order_usd, risk_pct, max_pos_usd)
+    )
+
+    base_order_usd = cfg.desired_pos_usdt if cfg.desired_pos_usdt is not None else env_order_usd
+    if base_order_usd is None and sizing_inputs_present:
+        base_order_usd = 0.0
+    risk_usd = None
+    if equity_usd > 0 and risk_pct is not None:
+        risk_usd = equity_usd * (risk_pct / 100.0)
+
+    target_candidates = [v for v in (base_order_usd, risk_usd, max_pos_usd) if v is not None and v > 0]
+    target_usd = min(target_candidates) if target_candidates else None
+    if target_usd is None and base_order_usd is not None:
+        target_usd = float(base_order_usd)
+    if not sizing_inputs_present:
+        target_usd = None
+
+    qty_raw = None
+    qty_final = None
+    sizing_blocked = False
+    if sizing_inputs_present and ps_mode != "atr_budget" and target_usd is not None and target_usd > 0 and float(getattr(sized, "price", 0.0) or 0.0) > 0:
+        price_val = float(getattr(sized, "price", 0.0) or 0.0)
+        lot_step = float(getattr(sized, "lot_step", 0.0) or 0.0)
+        min_qty = float(getattr(sized, "min_qty", 0.0) or 0.0)
+        min_notional = float(getattr(sized, "min_notional", 0.0) or 0.0)
+        qty_raw = target_usd / price_val
+        qty_final = _round_down_to_step(qty_raw, lot_step) if lot_step > 0 else qty_raw
+        if qty_final <= 0 or qty_final < min_qty:
+            blockers.append(
+                "invalid_sizing: qty_below_min_qty qty={qty} min_qty={min_qty}".format(
+                    qty=qty_final,
+                    min_qty=min_qty,
+                )
+            )
+            sizing_blocked = True
+        elif qty_final * price_val < min_notional:
+            blockers.append(
+                "invalid_sizing: notional_below_min_notional qty={qty} min_notional={min_notional}".format(
+                    qty=qty_final,
+                    min_notional=min_notional,
+                )
+            )
+            sizing_blocked = True
+        else:
+            fee_frac = cfg.fee_bps / 10000.0
+            buffer_frac = cfg.extra_buffer_pct
+            notional = qty_final * price_val
+            margin_cap = float(getattr(sized, "margin_cap", 0.0) or 0.0)
+            denom = margin_cap / (1.0 + fee_frac + buffer_frac) if margin_cap > 0 else 0.0
+            min_lev = int(max(1, math.ceil(notional / denom))) if denom > 0 else 999999
+            lev = int(max(1, min(max(1, cfg.preferred_max_leverage), max(1, min_lev))))
+            margin_used = notional / lev * (1.0 + fee_frac + buffer_frac)
+            sized.qty = float(qty_final)
+            sized.notional = float(notional)
+            sized.leverage = int(lev)
+            sized.min_leverage_needed = int(min_lev)
+            sized.margin_used = float(margin_used)
+
     # --- валідація LIMIT ціни ---
     payload = None
     price = kw.get("price")
@@ -316,7 +428,7 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
             )
         )
 
-    if ok and side_ok and qty_ok and not atr_blocked and (otype != "LIMIT" or price is not None):
+    if ok and side_ok and qty_ok and not atr_blocked and not sizing_blocked and (otype != "LIMIT" or price is not None):
         payload = {
             "symbol": symbol,
             "side": side,
@@ -334,7 +446,8 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
     sizer_block = {
         "qty": sized.qty, "leverage": sized.leverage, "min_leverage_needed": sized.min_leverage_needed,
         "notional": sized.notional, "margin_used": sized.margin_used, "margin_cap": sized.margin_cap,
-        "price": sized.price, "lot_step": sized.lot_step, "min_qty": sized.min_qty, "min_notional": sized.min_notional
+        "price": sized.price, "lot_step": sized.lot_step, "min_qty": sized.min_qty, "min_notional": sized.min_notional,
+        "size_usd": target_usd, "qty_raw": qty_raw, "qty_final": qty_final
     }
     if atr_budget_meta is not None:
         sizer_block["atr_budget"] = atr_budget_meta
