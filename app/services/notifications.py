@@ -24,18 +24,14 @@ import hashlib
 from urllib import request, parse
 from typing import Dict, Any, Optional
 
+from core.config.env import get_bool
+
 BINANCE_FAPI_BASE = os.environ.get("BINANCE_FAPI_BASE", "https://fapi.binance.com")
 _API_KEY = os.environ.get("API_KEY", "")
 _API_SECRET = os.environ.get("API_SECRET", "")
 
-def _as_bool(v: Optional[str], default: bool=False) -> bool:
-    if v is None:
-        return default
-    s = str(v).strip().lower()
-    return s in ("1", "true", "yes", "y", "on")
-
 def _is_dry_run() -> bool:
-    return _as_bool(os.environ.get("DRY_RUN_ONLY"), True)
+    return get_bool("DRY_RUN_ONLY", True)
 
 def _headers() -> Dict[str, str]:
     return {

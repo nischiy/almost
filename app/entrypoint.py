@@ -5,6 +5,7 @@ import logging
 import sys
 from typing import Any
 from app.bootstrap import compose_trader_app, resolve_runtime_mode
+from core.config.env import load_dotenv_once
 
 log = logging.getLogger("AppMain")
 
@@ -31,6 +32,7 @@ def _apply_overrides(args: Any) -> None:
         os.environ["STRATEGY_NAME"] = str(args.strategy).strip()
 
 def main(argv: list[str] | None = None) -> int:
+    load_dotenv_once()
     # базова конфігурація логів, щоб бачити в консолі тікі/події
     logging.basicConfig(
         level=getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO),
