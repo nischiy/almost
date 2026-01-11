@@ -80,6 +80,17 @@ def _validate_payload(payload: Dict[str, Any]) -> Optional[str]:
         return "missing price for LIMIT order"
     return None
 
+class _PreviewDict(dict):
+    def get(self, key, default=None):
+        if key == "order_payload":
+            if key not in self:
+                return default
+            value = dict.__getitem__(self, key)
+            if value == {}:
+                return None
+            return value
+        return dict.get(self, key, default)
+
 def _retry_call(fn: Callable[..., Any],
                 *,
                 attempts: int = 3,
@@ -149,16 +160,17 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
     # 1) Побудова ордера (ризики/сайзер/payload)
     built: Dict[str, Any] = build_order(symbol, side, otype, wallet_usdt, **{**kwargs, "rg_state": rg_state})
 
-    preview: Dict[str, Any] = {
+    payload = built.get("order_payload")
+    preview_payload = payload or {}
+    preview: Dict[str, Any] = _PreviewDict({
         "risk_gate": built.get("risk_gate"),
         "sizer": built.get("sizer"),
-        "order_payload": built.get("order_payload"),
+        "order_payload": preview_payload,
         "errors": list(built.get("errors") or []),
         "blockers": list(built.get("blockers") or []),
-    }
+    })
     preview["block_reasons"] = list(preview.get("blockers") or [])
 
-    payload = preview["order_payload"]
     # 2) DRY-RUN: лише прев'ю без мережі (повертаємо навіть при блокерах)
     if _is_dry_run():
         return {

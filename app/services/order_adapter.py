@@ -167,12 +167,15 @@ def _apply_atr_budget(
             "k_eff": k_eff
         }
 
-    cap_usd = _fenv("RISK_MAX_POS_USD", 100.0)
-    qty_cap_raw = cap_usd / price
-    qty_cap = _round_down_to_step(max(qty_cap_raw, 0.0), lot_step)  # кришка у крок лота (FLOOR)
+    cap_usd = _env_optional_float("RISK_MAX_POS_USD")
+    qty_cap_raw = None
+    qty_cap = None
+    if cap_usd is not None and cap_usd > 0:
+        qty_cap_raw = cap_usd / price
+        qty_cap = _round_down_to_step(max(qty_cap_raw, 0.0), lot_step)  # кришка у крок лота (FLOOR)
 
     qty_formula = (risk_budget_day_remaining * k_eff) / (atr * tick_value)
-    qty_raw = min(qty_cap_raw, qty_formula)
+    qty_raw = min(qty_cap_raw, qty_formula) if qty_cap_raw is not None else qty_formula
 
     # Піднімаємо до біржових мінімумів
     qty_up_min = max(qty_raw, min_qty)
@@ -183,10 +186,24 @@ def _apply_atr_budget(
     qty_up_min = _round_up_to_step(qty_up_min, lot_step)
 
     # Остаточне ОБМЕЖЕННЯ кришкою (FLOOR)
-    qty_final = min(qty_up_min, qty_cap)
+    qty_final = min(qty_up_min, qty_cap) if qty_cap is not None else qty_up_min
 
     # Якщо cap < біржового мінімуму — зробити валідний лот НЕМОЖЛИВО
-    if qty_cap <= 0 or qty_final <= 0 or qty_cap < _round_down_to_step(min_qty, lot_step):
+    if qty_final <= 0:
+        return sized.qty, {
+            "mode": "atr_budget",
+            "applied": False,
+            "reason": "cap_below_exchange_min",
+            "atr": atr, "tick_value": tick_value,
+            "risk_budget_day_remaining": risk_budget_day_remaining,
+            "k_eff": k_eff,
+            "qty_formula": qty_formula,
+            "qty_cap_raw": qty_cap_raw,
+            "qty_cap_floor": qty_cap,
+            "min_qty": min_qty,
+            "min_notional": min_notional
+        }
+    if qty_cap is not None and (qty_cap <= 0 or qty_cap < _round_down_to_step(min_qty, lot_step)):
         return sized.qty, {
             "mode": "atr_budget",
             "applied": False,
@@ -211,7 +228,7 @@ def _apply_atr_budget(
         "qty_cap_raw": qty_cap_raw,
         "qty_cap_floor": qty_cap,
         "qty_up_min": qty_up_min,
-        "final_limited_by_cap": qty_final < qty_up_min
+        "final_limited_by_cap": qty_final < qty_up_min if qty_cap is not None else False
     }
 
 def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) -> dict:
