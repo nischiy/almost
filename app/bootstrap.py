@@ -7,6 +7,7 @@ import importlib
 import inspect
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union, Callable, Tuple, Type
+from core.config.env import parse_bool, get_env
 
 
 # ----------------------------- Config & utils ---------------------------------
@@ -22,15 +23,6 @@ class AppConfig:
     binance_fapi_base: Optional[str] = None
     log_dir: str = "logs"
     log_level: str = "INFO"
-
-
-def _to_bool(val: Any, default: bool = False) -> bool:
-    if val is None:
-        return default
-    if isinstance(val, bool):
-        return val
-    s = str(val).strip().lower()
-    return s in ("1", "true", "yes", "y", "on")
 
 
 def _to_float(val: Any, default: float) -> float:
@@ -51,20 +43,20 @@ def _get(obj: Any, name: str, default: Any) -> Any:
 def _coerce_to_appconfig(cfg: Optional[Any], env: Optional[Dict[str, str]] = None) -> AppConfig:
     env = env or os.environ
 
-    symbol = _get(cfg, "SYMBOL", env.get("SYMBOL", "BTCUSDT"))
-    strategy_name = _get(cfg, "STRATEGY_NAME", env.get("STRATEGY_NAME", "baseline"))
+    symbol = _get(cfg, "SYMBOL", get_env("SYMBOL", "BTCUSDT", env=env))
+    strategy_name = _get(cfg, "STRATEGY_NAME", get_env("STRATEGY_NAME", "baseline", env=env))
 
-    paper = _to_bool(_get(cfg, "PAPER_TRADING", env.get("PAPER_TRADING")), default=True)
-    trade_enabled = _to_bool(_get(cfg, "TRADE_ENABLED", env.get("TRADE_ENABLED")), default=False)
-    dry_run = _to_bool(_get(cfg, "DRY_RUN_ONLY", env.get("DRY_RUN_ONLY")), default=True)
+    paper = parse_bool(_get(cfg, "PAPER_TRADING", get_env("PAPER_TRADING", None, env=env)), default=True)
+    trade_enabled = parse_bool(_get(cfg, "TRADE_ENABLED", get_env("TRADE_ENABLED", None, env=env)), default=False)
+    dry_run = parse_bool(_get(cfg, "DRY_RUN_ONLY", get_env("DRY_RUN_ONLY", None, env=env)), default=True)
     if paper:
         dry_run = True  # політика: paper ⇒ dry-run
 
-    loop_sleep = _to_float(_get(cfg, "LOOP_SLEEP_SEC", env.get("LOOP_SLEEP_SEC")), 1.0)
-    binance_fapi_base = _get(cfg, "BINANCE_FAPI_BASE", env.get("BINANCE_FAPI_BASE", None))
-    log_dir = _get(cfg, "LOG_DIR", env.get("LOG_DIR", "logs"))
+    loop_sleep = _to_float(_get(cfg, "LOOP_SLEEP_SEC", get_env("LOOP_SLEEP_SEC", None, env=env)), 1.0)
+    binance_fapi_base = _get(cfg, "BINANCE_FAPI_BASE", get_env("BINANCE_FAPI_BASE", None, env=env))
+    log_dir = _get(cfg, "LOG_DIR", get_env("LOG_DIR", "logs", env=env))
 
-    raw_level = _get(cfg, "LOG_LEVEL", env.get("LOG_LEVEL", "INFO"))
+    raw_level = _get(cfg, "LOG_LEVEL", get_env("LOG_LEVEL", "INFO", env=env))
     log_level = str(raw_level).upper() if not isinstance(raw_level, int) else {
         v: k for k, v in logging.__dict__.items() if isinstance(v, int)
     }.get(raw_level, "INFO")

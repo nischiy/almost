@@ -29,12 +29,13 @@ ENV:
     }
 """
 
-import os
 import time
 import uuid
 import logging
 import importlib
 from typing import Dict, Any, Callable, Optional
+
+from core.config.env import get_bool
 
 log = logging.getLogger("OrderService")
 
@@ -56,14 +57,8 @@ set_leverage_via_rest = _import_or_fail("app.services.notifications", "set_lever
 
 # ---- Допоміжні утиліти ---------------------------------------------------------
 
-def _as_bool(v: Optional[str], default: bool = True) -> bool:
-    if v is None:
-        return default
-    s = str(v).strip().lower()
-    return s in ("1", "true", "yes", "y", "on")
-
 def _is_dry_run() -> bool:
-    return _as_bool(os.getenv("DRY_RUN_ONLY", "1"), True)
+    return get_bool("DRY_RUN_ONLY", True)
 
 def _ensure_client_order_id(payload: Dict[str, Any]) -> None:
     """
@@ -129,11 +124,15 @@ def place(symbol: str, side: str, otype: str, wallet_usdt: float, **kwargs) -> D
         "sizer": built.get("sizer"),
         "order_payload": built.get("order_payload"),
         "errors": list(built.get("errors") or []),
+        "blockers": list(built.get("blockers") or []),
     }
 
     payload = preview["order_payload"]
     if not payload:
         # Немає чого відправляти (ризик/сайзер/валідація відсіяли)
+        blockers = preview.get("blockers") or []
+        if blockers:
+            log.warning("order blocked: %s", blockers[0])
         return {
             "submitted": False,
             "reason": "no_payload",

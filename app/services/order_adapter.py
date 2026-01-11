@@ -201,9 +201,12 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
         side = raw_side
     otype = (otype or "MARKET").upper()
     errors = []
+    blockers = []
     side_ok = side in ("BUY", "SELL")
     if not side_ok:
-        errors.append(f"invalid side: {raw_side}")
+        msg = f"invalid side: {raw_side}"
+        errors.append(msg)
+        blockers.append(msg)
 
     # --- базовий сайзинг ---
     cfg = SizerConfig(
@@ -215,10 +218,18 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
 
     # --- evaluate ризиків через core.risk_guard ---
     st = kw.get("rg_state", {}) or {}
+    equity_raw = st.get("equity_usd")
+    equity_usd = float(equity_raw or 0.0)
+    if equity_usd <= 0:
+        equity_usd = float(wallet_usdt or 0.0)
+    start_equity_raw = st.get("start_equity_usd", st.get("equity_usd"))
+    start_equity_usd = float(start_equity_raw or 0.0)
+    if start_equity_usd <= 0:
+        start_equity_usd = equity_usd
     metrics = {
         "daily_pnl_usd": float(st.get("pnl_today_usdt", 0.0)),
-        "equity_usd": float(st.get("equity_usd", 0.0)),
-        "start_equity_usd": float(st.get("start_equity_usd", st.get("equity_usd", 0.0))),
+        "equity_usd": float(equity_usd),
+        "start_equity_usd": float(start_equity_usd),
         "open_risk_usd": float(st.get("open_risk_usd", 0.0)),
         "trades_today": int(st.get("trades_today", 0)),
         "consec_losses": int(st.get("consec_losses", st.get("loss_streak", 0))),
@@ -227,6 +238,16 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
     ok = bool(ev.get("ok"))
     reason = ev
     limits_repr = {"source": "ENV@core.risk_guard"}
+    if not ok:
+        violations = ev.get("violations") or []
+        if violations:
+            details = "; ".join(
+                f"{v.get('limit')} value={v.get('value')} limit={v.get('limit_value')}"
+                for v in violations
+            )
+            blockers.append(f"risk_gate: {details}")
+        else:
+            blockers.append("risk_gate: blocked")
 
     # --- NEW: ATR-Risk Budget sizing ---
     ps_mode = (kw.get("ps_mode") or "").lower().strip()
@@ -247,6 +268,7 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
             }[name], str(kw[name]))
 
     atr_budget_meta = None
+    atr_blocked = False
     if ps_mode == "atr_budget":
         new_qty, meta = _apply_atr_budget(
             sized,
@@ -265,12 +287,17 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
             sized.notional = new_qty * float(getattr(sized, "price", 0.0) or 0.0)
         except Exception:
             pass
+        if meta.get("applied") is False and meta.get("reason") == "cap_below_exchange_min":
+            atr_blocked = True
+            blockers.append("atr_budget: cap_below_exchange_min")
 
     # --- валідація LIMIT ціни ---
     payload = None
     price = kw.get("price")
     if otype == "LIMIT" and price is None:
-        errors.append("PRICE is required for LIMIT orders")
+        msg = "PRICE is required for LIMIT orders"
+        errors.append(msg)
+        blockers.append(msg)
 
     # --- додатковий захист: не створюємо payload, якщо кількість невалідна або менша за біржові мінімуми ---
     qty_ok = (
@@ -279,8 +306,17 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
         and float(getattr(sized, "qty", 0.0)) >= float(getattr(sized, "min_qty", 0.0) or 0.0)
         and float(getattr(sized, "qty", 0.0)) * float(getattr(sized, "price", 0.0) or 0.0) >= float(getattr(sized, "min_notional", 0.0) or 0.0)
     )
+    if not qty_ok:
+        blockers.append(
+            "invalid_sizing: qty={qty} min_qty={min_qty} notional={notional} min_notional={min_notional}".format(
+                qty=getattr(sized, "qty", None),
+                min_qty=getattr(sized, "min_qty", None),
+                notional=float(getattr(sized, "qty", 0.0) or 0.0) * float(getattr(sized, "price", 0.0) or 0.0),
+                min_notional=getattr(sized, "min_notional", None),
+            )
+        )
 
-    if ok and side_ok and qty_ok and (otype != "LIMIT" or price is not None):
+    if ok and side_ok and qty_ok and not atr_blocked and (otype != "LIMIT" or price is not None):
         payload = {
             "symbol": symbol,
             "side": side,
@@ -308,4 +344,5 @@ def build_order(symbol: str, side: str, otype: str, wallet_usdt: float, **kw) ->
         "sizer": sizer_block,
         "order_payload": payload,
         "errors": errors,
+        "blockers": blockers,
     }

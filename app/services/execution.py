@@ -3,6 +3,7 @@ import logging
 from typing import Dict, Any, Optional
 
 from app.decision import normalize_side
+from core.config.env import get_bool
 
 class ExecutionService:
     def __init__(self, cfg=None, symbol: Optional[str]=None, logger: Optional[logging.Logger]=None):
@@ -13,11 +14,10 @@ class ExecutionService:
     def place(self, decision: Dict[str, Any]) -> None:
         # Paper-safe logging; if PAPER_TRADING=1 and TRADE_ENABLED=0, write csv to logs/orders/<date>.csv
         try:
-            import os as _os
             from pathlib import Path as _Path
             from datetime import datetime as _dt, timezone as _tz
-            paper = str(_os.environ.get("PAPER_TRADING","1")).strip().lower() in {"1","true","yes","on"}
-            trade_enabled = str(_os.environ.get("TRADE_ENABLED","0")).strip().lower() in {"1","true","yes","on"}
+            paper = get_bool("PAPER_TRADING", True)
+            trade_enabled = get_bool("TRADE_ENABLED", False)
             if paper and not trade_enabled:
                 d = _Path("logs") / "orders" / _dt.now(_tz.utc).strftime("%Y-%m-%d")
                 d.mkdir(parents=True, exist_ok=True)

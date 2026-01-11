@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from typing import Optional
+from core.config.env import parse_bool, get_env
 
 # =====================
 # Config dataclass
@@ -35,9 +36,6 @@ _SYNONYMS = {
     "INTERVAL": ["INTERVAL", "TF", "TIMEFRAME"],
     "LOG_DIR": ["LOG_DIR", "LOGS_DIR"],
 }
-
-def _to_bool(val: str) -> bool:
-    return str(val).strip().lower() in ("1","true","yes","on")
 
 def normalize_env(environ: Optional[dict] = None) -> None:
     """
@@ -83,21 +81,21 @@ _CONFIG_SINGLETON: Optional[Config] = None
 def load_config() -> Config:
     """Build Config from (already normalized) environment."""
     return Config(
-        ENV=os.getenv("ENV", "production"),
-        PAPER_TRADING=_to_bool(os.getenv("PAPER_TRADING","1")),
-        TRADE_ENABLED=_to_bool(os.getenv("TRADE_ENABLED","0")),
-        BINANCE_TESTNET=_to_bool(os.getenv("BINANCE_TESTNET","0")),
+        ENV=get_env("ENV", "production"),
+        PAPER_TRADING=parse_bool(get_env("PAPER_TRADING", "1")),
+        TRADE_ENABLED=parse_bool(get_env("TRADE_ENABLED", "0")),
+        BINANCE_TESTNET=parse_bool(get_env("BINANCE_TESTNET", "0")),
 
-        EXCHANGE=os.getenv("EXCHANGE","binance_futures"),
-        SYMBOL=os.getenv("SYMBOL","BTCUSDT"),
-        INTERVAL=os.getenv("INTERVAL","1m"),
-        HTF_INTERVAL=os.getenv("HTF_INTERVAL","15m"),
-        QUOTE_ASSET=os.getenv("QUOTE_ASSET","USDT"),
+        EXCHANGE=get_env("EXCHANGE", "binance_futures"),
+        SYMBOL=get_env("SYMBOL", "BTCUSDT"),
+        INTERVAL=get_env("INTERVAL", "1m"),
+        HTF_INTERVAL=get_env("HTF_INTERVAL", "15m"),
+        QUOTE_ASSET=get_env("QUOTE_ASSET", "USDT"),
 
-        BINANCE_API_KEY=os.getenv("BINANCE_API_KEY",""),
-        BINANCE_API_SECRET=os.getenv("BINANCE_API_SECRET",""),
+        BINANCE_API_KEY=get_env("BINANCE_API_KEY", ""),
+        BINANCE_API_SECRET=get_env("BINANCE_API_SECRET", ""),
 
-        LOG_DIR=os.getenv("LOG_DIR","logs"),
+        LOG_DIR=get_env("LOG_DIR", "logs"),
     )
 
 def get_config() -> Config:

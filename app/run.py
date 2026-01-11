@@ -11,6 +11,7 @@ from typing import Callable, Optional, Any, Dict
 import pandas as pd
 
 from app.decision import normalize_decision, normalize_side
+from core.config.env import get_env, get_bool, load_dotenv_once, dotenv_loaded
 
 LOG_NAME = "BotRun"
 
@@ -37,10 +38,10 @@ class TraderApp:
     def __init__(self, cfg: Any=None, symbol: Optional[str]=None, interval: Optional[str]=None, logger: Optional[logging.Logger]=None):
         self.log = logger or _setup_logging()
         self.cfg = cfg
-        self.symbol = symbol or os.environ.get("SYMBOL", "BTCUSDT")
-        self.interval = interval or os.environ.get("INTERVAL", "1m")
-        self.paper = os.environ.get("PAPER_TRADING", "1") != "0"
-        self.trade_enabled = os.environ.get("TRADE_ENABLED", "0") == "1"
+        self.symbol = symbol or get_env("SYMBOL", "BTCUSDT")
+        self.interval = interval or get_env("INTERVAL", "1m")
+        self.paper = get_bool("PAPER_TRADING", True)
+        self.trade_enabled = get_bool("TRADE_ENABLED", False)
         self.md = None   # expects get_klines(symbol, interval, limit=...)
         self.sig = None  # expects decide(df, params_dict) -> dict
         self.risk = None # expects can_open(decision) -> (ok, reason)
@@ -167,8 +168,19 @@ def _try_get_main() -> Optional[Callable[..., None]]:
     return None
 
 def _print_env(logger: logging.Logger) -> None:
-    safe_keys = ["SYMBOL", "PAPER_TRADING", "TRADE_ENABLED", "BINANCE_FAPI_BASE", "STRATEGY_NAME", "INTERVAL"]
-    msg = {k: os.environ.get(k) for k in safe_keys if k in os.environ}
+    keys = [
+        "SYMBOL",
+        "INTERVAL",
+        "STRATEGY_NAME",
+        "PAPER_TRADING",
+        "TRADE_ENABLED",
+        "DRY_RUN_ONLY",
+        "BINANCE_TESTNET",
+    ]
+    msg = {k: get_env(k) for k in keys}
+    msg["dotenv_loaded"] = dotenv_loaded()
+    msg["api_key_present"] = bool(get_env("API_KEY"))
+    msg["api_secret_present"] = bool(get_env("API_SECRET"))
     logger.info("Startup env: %s", msg)
 
 def _heartbeat(logger: logging.Logger, oneshot: bool) -> None:
@@ -284,14 +296,15 @@ def _build_execution_payload(decision: Dict[str, Any], symbol: str) -> Dict[str,
     return {"symbol": symbol, "side": side, "otype": otype, "wallet_usdt": wallet_usdt, **extra}
 
 def main() -> None:
+    load_dotenv_once()
     logger = _setup_logging()
     logger.info("=== Bot startup ===")
     _print_env(logger)
 
     fn = _try_get_main()
     oneshot_like = _is_testish_env()
-    trade_enabled = os.environ.get("TRADE_ENABLED", "0") == "1"
-    api_key_present = bool(os.environ.get("API_KEY", ""))
+    trade_enabled = get_bool("TRADE_ENABLED", False)
+    api_key_present = bool(get_env("API_KEY", ""))
 
     if fn is not None:
         # Якщо НЕ бойовий режим (TRADE_ENABLED!=1) або немає API_KEY, або test/CI —
