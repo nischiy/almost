@@ -4,8 +4,13 @@ import sys
 import time
 import logging
 import inspect
+from datetime import datetime, timezone
 from importlib import import_module
 from typing import Callable, Optional, Any, Dict
+
+import pandas as pd
+
+from app.decision import normalize_decision, normalize_side
 
 LOG_NAME = "BotRun"
 
@@ -29,8 +34,8 @@ def _setup_logging() -> logging.Logger:
 
 class TraderApp:
     """Фасад життєвого циклу бота, сумісний з тестами."""
-    def __init__(self, cfg: Any=None, symbol: Optional[str]=None, interval: Optional[str]=None):
-        self.log = _setup_logging()
+    def __init__(self, cfg: Any=None, symbol: Optional[str]=None, interval: Optional[str]=None, logger: Optional[logging.Logger]=None):
+        self.log = logger or _setup_logging()
         self.cfg = cfg
         self.symbol = symbol or os.environ.get("SYMBOL", "BTCUSDT")
         self.interval = interval or os.environ.get("INTERVAL", "1m")
@@ -47,6 +52,8 @@ class TraderApp:
         if getattr(self, "md", None) and hasattr(self.md, "get_klines"):
             try:
                 df = self.md.get_klines(self.symbol, self.interval, limit=1000)
+                df = _ensure_utc_timestamps(df)
+                df = _filter_closed_candles(df)
             except Exception as e:
                 self.log.exception("md.get_klines failed: %s", e)
                 df = None
@@ -58,17 +65,23 @@ class TraderApp:
                 pass
 
         decision = None
-        if getattr(self, "sig", None) and hasattr(self.sig, "decide") and df is not None:
+        sig_available = getattr(self, "sig", None) and hasattr(self.sig, "decide")
+        if sig_available and df is not None and not df.empty:
             try:
                 params: Dict[str, Any] = _build_strategy_params(self.cfg)
                 decision = self.sig.decide(df, params)  # DICT-only контракт
             except Exception as e:
                 self.log.exception("sig.decide failed: %s", e)
-                decision = None
+                decision = {"side": "HOLD", "action": "HOLD", "reason": "signal_error"}
+        elif sig_available:
+            decision = {"side": "HOLD", "action": "HOLD", "reason": "no_market_data"}
 
         if not isinstance(decision, dict):
             self.log.info("run_once: no decision; symbol=%s interval=%s", self.symbol, self.interval)
             return
+
+        decision = normalize_decision(decision, fallback_reason="signal_empty")
+        self.log.info("run_once: decision=%s", decision)
 
         # телеметрія рішення
         if getattr(self, "tel", None) and hasattr(self.tel, "decision"):
@@ -88,6 +101,8 @@ class TraderApp:
 
         if not ok:
             self.log.info("run_once: blocked by risk (%s)", reason)
+            if normalize_side(decision.get("side") or decision.get("action")) in {"HOLD", "UNKNOWN"}:
+                self.log.info("run_once: HOLD — nothing to execute")
             if getattr(self, "tel", None) and hasattr(self.tel, "health"):
                 try:
                     self.tel.health(ok=False, msg=reason)
@@ -98,26 +113,11 @@ class TraderApp:
         # execution
         if getattr(self, "exe", None) and hasattr(self.exe, "place"):
             try:
-                side = decision.get("side") or decision.get("action") or "HOLD"
-                side = str(side).upper()
-                if side in {"HOLD", "FLAT", "NONE"}:
+                side = normalize_side(decision.get("side") or decision.get("action"))
+                if side in {"HOLD", "UNKNOWN"}:
                     self.log.info("run_once: HOLD — nothing to execute")
                     return
-                sig = inspect.signature(self.exe.place)
-                params = [p for p in sig.parameters.values() if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
-                if len(params) <= 1:
-                    res = self.exe.place(decision)
-                else:
-                    otype = decision.get("type") or decision.get("otype") or "MARKET"
-                    wallet_usdt = decision.get("wallet_usdt")
-                    if wallet_usdt is None:
-                        wallet_usdt = float(os.getenv("WALLET_USDT", "1000"))
-
-                    # приберемо дублікати ключів, які передаємо позиційно
-                    drop = {"side", "type", "otype", "wallet_usdt", "symbol"}
-                    kwargs = {k: v for k, v in decision.items() if k not in drop}
-
-                    res = self.exe.place(self.symbol, side, otype, wallet_usdt, **kwargs)
+                res = _call_execution(self.exe.place, decision, symbol=self.symbol)
                 if isinstance(res, dict):
                     self.log.info("execution: submitted=%s reason=%s", res.get("submitted"), res.get("reason"))
                 else:
@@ -232,6 +232,56 @@ def _build_strategy_params(cfg: Any) -> Dict[str, Any]:
         params["symbol"] = params["SYMBOL"]
     params.setdefault("symbol", os.getenv("SYMBOL", "BTCUSDT"))
     return params
+
+
+def _ensure_utc_timestamps(df: Any) -> Any:
+    if df is None or not hasattr(df, "columns"):
+        return df
+    for col in ("open_time", "close_time", "time"):
+        if col in df.columns:
+            series = pd.to_datetime(df[col], utc=True, errors="coerce")
+            df[col] = series
+    return df
+
+
+def _filter_closed_candles(df: Any) -> Any:
+    if df is None or not hasattr(df, "columns") or df.empty:
+        return df
+    now = datetime.now(timezone.utc)
+    if "close_time" in df.columns:
+        closed = df["close_time"] <= now
+    elif "open_time" in df.columns:
+        closed = df["open_time"] <= now
+    else:
+        return df
+    filtered = df.loc[closed]
+    return filtered if not filtered.empty else df.iloc[0:0]
+
+
+def _call_execution(place_fn: Callable[..., Any], decision: Dict[str, Any], *, symbol: str) -> Any:
+    sig = inspect.signature(place_fn)
+    params = sig.parameters
+    if "decision" in params:
+        return place_fn(decision=decision)
+
+    positional = [p for p in params.values() if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
+    has_kwargs = any(p.kind == p.VAR_KEYWORD for p in params.values())
+    if len(positional) <= 1 and not has_kwargs:
+        return place_fn(decision)
+
+    payload = _build_execution_payload(decision, symbol)
+    return place_fn(**payload)
+
+
+def _build_execution_payload(decision: Dict[str, Any], symbol: str) -> Dict[str, Any]:
+    side = normalize_side(decision.get("side") or decision.get("action"))
+    otype = decision.get("type") or decision.get("otype") or "MARKET"
+    wallet_usdt = decision.get("wallet_usdt")
+    if wallet_usdt is None:
+        wallet_usdt = float(os.getenv("WALLET_USDT", "1000"))
+    drop = {"side", "action", "type", "otype", "wallet_usdt", "symbol"}
+    extra = {k: v for k, v in decision.items() if k not in drop}
+    return {"symbol": symbol, "side": side, "otype": otype, "wallet_usdt": wallet_usdt, **extra}
 
 def main() -> None:
     logger = _setup_logging()

@@ -14,7 +14,7 @@ def test_traderapp_run_once_exec_called(monkeypatch, df_klines):
     # stub signal
     class SIG:
         def decide(self, df, params):
-            return {"action":"LONG","price":float(df['close'].iloc[-1]),"qty":0.001}
+            return {"action":"BUY","price":float(df['close'].iloc[-1]),"qty":0.001}
     app.sig = SIG()
 
     # stub risk
@@ -39,4 +39,4 @@ def test_traderapp_run_once_exec_called(monkeypatch, df_klines):
 
     app.run_once()
     assert "decision" in calls
-    assert calls["decision"]["action"] in {"LONG","SHORT"}
+    assert calls["decision"]["action"] in {"BUY","SELL"}

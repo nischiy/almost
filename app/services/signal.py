@@ -9,6 +9,7 @@ import pandas as pd
 
 # 1) Джерело дефолтних параметрів (підтримує обидві сигнатури: get_best_params() та get_best_params(name))
 from core.config.best_params import get_best_params  # type: ignore
+from app.decision import normalize_decision
 
 log = logging.getLogger("SignalService")
 
@@ -86,27 +87,12 @@ def _best_params_for(name: str) -> Dict[str, Any]:
         return get_best_params()      # type: ignore[call-arg]
 
 
-def _normalize_side(v: Any) -> str:
-    """Приводимо будь-які варіанти до LONG/SHORT/HOLD."""
-    if v is None:
-        return "HOLD"
-    s = str(v).strip().upper()
-    if s in ("BUY", "LONG"):
-        return "LONG"
-    if s in ("SELL", "SHORT"):
-        return "SHORT"
-    return "HOLD"
-
-
 def _normalize_decision(raw: Dict[str, Any], fallback_reason: str) -> Dict[str, Any]:
     """
     Нормалізує словник рішення до стабільного контракту (див. верхній блок).
     Зберігає всі невідомі ключі як є.
     """
-    out = dict(raw or {})
-    side = out.get("side") or out.get("action") or "HOLD"
-    out["side"] = _normalize_side(side)
-    out.setdefault("reason", fallback_reason)
+    out = normalize_decision(raw, fallback_reason=fallback_reason)
     if "size_usd" not in out:
         out["size_usd"] = out.get("size") if "size" in out else None
     out.setdefault("sl", None)
@@ -162,4 +148,4 @@ class SignalService:
         except Exception as e:
             # Не валимо застосунок: фейл стратегії = HOLD
             self.log.error("Strategy '%s' failed: %s", name, e, exc_info=True)
-            return {"side": "HOLD", "reason": f"{name}:error", "sl": None, "tp": None, "size_usd": None}
+            return {"side": "HOLD", "action": "HOLD", "reason": f"{name}:error", "sl": None, "tp": None, "size_usd": None}

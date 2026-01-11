@@ -299,7 +299,8 @@ def compose_trader_app(cfg: Optional[Union[AppConfig, Dict[str, Any], Any]] = No
     })
 
     # 2) Wire adapters
-    setattr(trader_app, "md", MarketDataAdapter(cfg=cfg or app_cfg, symbol=app_cfg.symbol, logger=logging.getLogger("MarketData")))
+    md_module = os.environ.get("MARKET_DATA_MODULE", "app.services.market_data")
+    setattr(trader_app, "md", MarketDataAdapter(module_name=md_module, cfg=cfg or app_cfg, symbol=app_cfg.symbol, logger=logging.getLogger("MarketData")))
     log.info("Wired MarketDataAdapter -> trader_app.md")
 
     setattr(trader_app, "exe", OrderServiceAdapter(cfg=cfg or app_cfg, symbol=app_cfg.symbol, logger=logging.getLogger("OrderService")))
@@ -307,6 +308,7 @@ def compose_trader_app(cfg: Optional[Union[AppConfig, Dict[str, Any], Any]] = No
 
     # 3) Wire class-based services (якщо є)
     _wire_class_service(trader_app, "app.services.signal", "SignalService", "sig", log, logger_name="Signal", kwargs={"cfg": cfg or app_cfg, "symbol": app_cfg.symbol})
+    _wire_class_service(trader_app, "app.services.risk", "RiskService", "risk", log, logger_name="Risk", kwargs={})
     _wire_class_service(trader_app, "app.services.exit_manager", "ExitManager", "exit", log, logger_name="ExitManager", kwargs={"cfg": cfg or app_cfg, "symbol": app_cfg.symbol})
     _wire_class_service(trader_app, "app.services.telemetry", "TelemetryService", "tel", log, logger_name="Telemetry", kwargs={"cfg": cfg or app_cfg, "symbol": app_cfg.symbol})
     _wire_class_service(trader_app, "app.services.execution", "ExecutionService", "executor", log, logger_name="Execution", kwargs={"cfg": cfg or app_cfg, "symbol": app_cfg.symbol})

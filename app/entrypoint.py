@@ -4,7 +4,7 @@ import os
 import logging
 import sys
 from typing import Any
-from app.run import TraderApp  # сумісність
+from app.bootstrap import compose_trader_app, resolve_runtime_mode
 
 log = logging.getLogger("AppMain")
 
@@ -45,8 +45,9 @@ def main(argv: list[str] | None = None) -> int:
     _apply_overrides(args)
 
     log = logging.getLogger("AppMain")
-    log.info("entrypoint.main() -> constructing TraderApp")
-    app = TraderApp()
+    log.info("entrypoint.main() -> composing TraderApp")
+    cfg = resolve_runtime_mode()
+    app = compose_trader_app(cfg)
     app.start(oneshot=bool(args.once))
     return 0
 

@@ -20,4 +20,4 @@ def test_execution_has_callable_place_like():
     place = getattr(inst, "place", None) or getattr(inst, "place_order", None) or getattr(inst, "execute", None)
     assert callable(place), "Execution service lacks place/place_order/execute"
     # should not raise
-    place({"action":"LONG","price":100.0,"qty":0.001})
+    place({"action":"BUY","price":100.0,"qty":0.001})

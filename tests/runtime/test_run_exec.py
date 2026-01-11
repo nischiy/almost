@@ -14,6 +14,7 @@ def test_run_module_produces_output(monkeypatch):
     env.setdefault("PAPER_TRADING", "1")
     env.setdefault("TRADE_ENABLED", "0")
     env.setdefault("SYMBOL", "BTCUSDT")
+    env.setdefault("MARKET_DATA_MODULE", "app.services.market_data_stub")
 
     cmd = [sys.executable, "-m", "app.run"]
     try:

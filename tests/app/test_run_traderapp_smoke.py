@@ -12,7 +12,7 @@ class FakeMD:
 
 class FakeSIG:
     def decide(self, df, params=None):
-        return {"action": "LONG", "price": float(df['close'].iloc[-1]), "qty": 1.0, "reason": "test"}
+        return {"action": "BUY", "price": float(df['close'].iloc[-1]), "qty": 1.0, "reason": "test"}
 
 class FakeRISK:
     def can_open(self, decision):
